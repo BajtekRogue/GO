@@ -3,6 +3,7 @@ package GameObjectsLogic;
 import GameObjects.*;
 import MyExceptions.SuicideException;
 
+
 public class NeighbourManager {
     private Board board;
     private ArrayOfNeighbours arrayOfNeighbours;
@@ -12,7 +13,11 @@ public class NeighbourManager {
         this.arrayOfNeighbours = arrayOfNeighbours;
     }
 
-    public void addNeighbours(int x, int y) throws ArrayIndexOutOfBoundsException, SuicideException{
+    public ArrayOfNeighbours getArrayOfNeighbours() {
+        return arrayOfNeighbours;
+    }
+
+    public void addNeighbours(int x, int y) throws ArrayIndexOutOfBoundsException{
         Stone stone = board.getTile(x, y); //make sure it's not null
         if(stone == null)
             return;
@@ -71,13 +76,13 @@ public class NeighbourManager {
         }
 
         StoneNeighbours stoneNeighbours = new StoneNeighbours(northState, eastState, southState, westState);
-        if(isSuicide(stoneNeighbours))
-            throw new SuicideException("Cannot attempt suicide");
+//        if(isSuicide(stoneNeighbours))
+//            throw new SuicideException("Cannot attempt suicide");
         arrayOfNeighbours.setNeighbours(x, y, stoneNeighbours);
 
     }
 
-    public void updateNeighbours(int x, int y) throws SuicideException{
+    public void updateNeighbours(int x, int y){
         try{
             addNeighbours(x, y + 1);
         }catch (ArrayIndexOutOfBoundsException e){}
@@ -93,9 +98,21 @@ public class NeighbourManager {
 
     }
 
-    public boolean isSuicide(StoneNeighbours stoneNeighbours){
-        if(stoneNeighbours.getNumberOfBreaths() == 0 && stoneNeighbours.getNumberOfConnections() == 0)
-            return true;
-        return false;
+    public void updateAllNeighbours(){
+        for(int i = 0; i < arrayOfNeighbours.getArraySize(); i++){
+            for(int j = 0; j < arrayOfNeighbours.getArraySize(); j++){
+                updateNeighbours(i, j);
+            }
+        }
+
     }
+
+
+//    public boolean isSuicide(StoneNeighbours stoneNeighbours){
+//        if(stoneNeighbours.getNumberOfBreaths() == 0 && stoneNeighbours.getNumberOfConnections() == 0)
+//            return true;
+//        return false;
+//    }
+
+
 }

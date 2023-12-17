@@ -12,6 +12,10 @@ public class BoardManager {
         this.board = board;
     }
 
+    public Stone getStone(int x, int y){
+        return board.getTile(x, y);
+    }
+
     public void addStone(int x, int y, Stone stone) throws ArrayIndexOutOfBoundsException, OccupiedTileException {
 
         if(!isTileFree(x, y))
