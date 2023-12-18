@@ -11,6 +11,9 @@ public class BoardManager {
     public BoardManager(Board board){
         this.board = board;
     }
+    public Board getBoard() {
+        return board;
+    }
 
     public Stone getStone(int x, int y){
         return board.getTile(x, y);
