@@ -27,14 +27,14 @@ public class CaptureManager {
             System.out.println("Removed stone : (" + coordinates.getX() + "," + coordinates.getY() + ")");
         }
         neighbourManager.updateAllNeighbours();
-        if(!stonesToBeRemoved.isEmpty()){
-        try {
-            // Sleep for 2 seconds (2000 milliseconds)
-            Thread.sleep(2000);
-        } catch (InterruptedException e) {
-            // Handle the interruption if needed
-            e.printStackTrace();
-        }}
+//        if(!stonesToBeRemoved.isEmpty()){
+//        try {
+//            // Sleep for 2 seconds (2000 milliseconds)
+//            Thread.sleep(2000);
+//        } catch (InterruptedException e) {
+//            // Handle the interruption if needed
+//            e.printStackTrace();
+//        }}
         return stonesToBeRemoved.size();
 
     }

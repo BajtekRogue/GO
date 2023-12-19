@@ -22,7 +22,7 @@ public class BoardManager {
     public void addStone(int x, int y, Stone stone) throws ArrayIndexOutOfBoundsException, OccupiedTileException {
 
         if(!isTileFree(x, y))
-            throw new OccupiedTileException("Tile (" + x + "," + y + ") is already occupied");
+            throw new OccupiedTileException("Tile (" + x + "," + y  + ") is already occupied");
         board.setTile(x, y, stone);
     }
 
