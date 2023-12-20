@@ -20,40 +20,45 @@ public class CaptureManager {
 
     public static int removeCapturedStones(List<Coordinates> stonesToBeRemoved){
         for (Coordinates coordinates: stonesToBeRemoved)
-            BoardManager.removeStone(coordinates.x(), coordinates.y());
+            BoardManager.removeStone(coordinates.getX(), coordinates.getY());
 
         NeighbourManager.updateAllNeighbours();
         return stonesToBeRemoved.size();
 
     }
-    public static int checkForCapture(int x, int y) throws SuicideException{
-        List<Coordinates> stonesToBeCaptured;
+    public static List<Coordinates> checkForCapture(int x, int y){
+        List<Coordinates> stonesToBeCaptured = new ArrayList<>();
+        List<Coordinates> stonesToBeCapturedNorth;
+        List<Coordinates> stonesToBeCapturedEast;
+        List<Coordinates> stonesToBeCapturedSouth;
+        List<Coordinates> stonesToBeCapturedWest;
         StoneNeighbours lastPlacedStoneNeighbours = NeighbourManager.getArrayOfNeighbours().getNeighbours(x, y);
         int totalRemovedStones = 0;
 
         if(lastPlacedStoneNeighbours.getNorth() == NeighbourState.ENEMY){
-            stonesToBeCaptured = lookForChain(x, y + 1);
-            if(stonesToBeCaptured != null)
-                totalRemovedStones += removeCapturedStones(stonesToBeCaptured);
+            stonesToBeCapturedNorth = lookForChain(x, y + 1);
+            if(stonesToBeCapturedNorth != null)
+                stonesToBeCaptured.addAll(stonesToBeCapturedNorth);
 
         }
         if(lastPlacedStoneNeighbours.getEast() == NeighbourState.ENEMY){
-            stonesToBeCaptured = lookForChain(x + 1, y);
-            if(stonesToBeCaptured != null)
-                totalRemovedStones += removeCapturedStones(stonesToBeCaptured);
+            stonesToBeCapturedEast = lookForChain(x + 1, y);
+            if(stonesToBeCapturedEast != null)
+                stonesToBeCaptured.addAll(stonesToBeCapturedEast);
 
         }
         if(lastPlacedStoneNeighbours.getSouth() == NeighbourState.ENEMY){
-            stonesToBeCaptured = lookForChain(x, y - 1);
-            if(stonesToBeCaptured != null)
-                totalRemovedStones += removeCapturedStones(stonesToBeCaptured);
+            stonesToBeCapturedSouth = lookForChain(x, y - 1);
+            if(stonesToBeCapturedSouth != null)
+                stonesToBeCaptured.addAll(stonesToBeCapturedSouth);
         }
         if(lastPlacedStoneNeighbours.getWest() == NeighbourState.ENEMY){
-            stonesToBeCaptured = lookForChain(x - 1, y);
-            if(stonesToBeCaptured != null)
-                totalRemovedStones += removeCapturedStones(stonesToBeCaptured);
+            stonesToBeCapturedWest = lookForChain(x - 1, y);
+            if(stonesToBeCapturedWest != null)
+                stonesToBeCaptured.addAll(stonesToBeCapturedWest);
         }
-        return totalRemovedStones;
+
+        return stonesToBeCaptured;
     }
 
     public static List<Coordinates> lookForChain(int x, int y) {

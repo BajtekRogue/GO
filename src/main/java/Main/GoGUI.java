@@ -1,11 +1,13 @@
 package Main;
 
+import GameObjects.Coordinates;
 import GameObjects.Stone;
 import GameObjects.StoneColor;
 import GameObjectsLogic.BoardManager;
 import GameObjectsLogic.CaptureManager;
 import GameObjectsLogic.GameMaster;
 import GameObjectsLogic.NeighbourManager;
+import MyExceptions.KOException;
 import MyExceptions.OccupiedTileException;
 import MyExceptions.SuicideException;
 import javafx.application.Application;
@@ -20,6 +22,8 @@ import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 
+import java.util.List;
+
 public class GoGUI extends Application {
 
     private static final int BOARD_SIZE = 13;
@@ -31,7 +35,7 @@ public class GoGUI extends Application {
     private StoneColor currentPlayer;
     private Canvas canvas;
     private Button[][] buttons;
-
+    private Coordinates KO_position = new Coordinates(-1, -1);
     public GoGUI() {
         GameMaster gameMaster = new GameMaster(BOARD_SIZE);
         this.currentPlayer = StoneColor.BLACK;
@@ -103,19 +107,29 @@ public class GoGUI extends Application {
             BoardManager.addStone(x, y, new Stone(currentPlayer));
             NeighbourManager.addNeighbours(x, y);
             NeighbourManager.updateNeighbours(x, y);
-            int capturedStones = CaptureManager.checkForCapture(x, y);
+            List<Coordinates> capturedStones = CaptureManager.checkForCapture(x, y);
+            int numberOfCapturedStones = CaptureManager.removeCapturedStones(capturedStones);
 
 //            if (capturedStones > 0 && currentPlayer == StoneColor.BLACK) {
 //                // Black player gets points for captures
 //                // Add your logic here if needed
 //            }
 
-            if (capturedStones == 0) {
+            if(KO_position.getX() == x && KO_position.getY() == y)
+                throw new KOException("KO");
+
+            if (numberOfCapturedStones == 0) {
                 CaptureManager.checkForSuicide(x, y);
             }
+
+            if(numberOfCapturedStones == 1)
+                KO_position.setCoordinates(capturedStones.get(0).getX(), capturedStones.get(0).getY());
+            else
+                KO_position.setCoordinates(-1, -1);
+
             updateStones();
             switchPlayer();
-        } catch (OccupiedTileException | SuicideException ex) {
+        } catch (OccupiedTileException | SuicideException | KOException ex) {
             showAlert(ex.getMessage());
         }
     }
