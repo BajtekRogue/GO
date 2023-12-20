@@ -1,23 +1,22 @@
 package GameObjectsLogic;
 
 import GameObjects.*;
-import MyExceptions.SuicideException;
 
 
 public class NeighbourManager {
-    private Board board;
-    private ArrayOfNeighbours arrayOfNeighbours;
+    private static Board board;
+    private static ArrayOfNeighbours arrayOfNeighbours;
 
-    public NeighbourManager(Board board, ArrayOfNeighbours arrayOfNeighbours){
+    public NeighbourManager(Board board){
         this.board = board;
-        this.arrayOfNeighbours = arrayOfNeighbours;
+        this.arrayOfNeighbours = new ArrayOfNeighbours(board.getBOARD_SIZE());
     }
 
-    public ArrayOfNeighbours getArrayOfNeighbours() {
+    public static ArrayOfNeighbours getArrayOfNeighbours() {
         return arrayOfNeighbours;
     }
 
-    public void addNeighbours(int x, int y) throws ArrayIndexOutOfBoundsException{
+    public static void addNeighbours(int x, int y) throws ArrayIndexOutOfBoundsException{
         Stone stone = board.getTile(x, y); //make sure it's not null
         if(stone == null)
             return;
@@ -76,13 +75,11 @@ public class NeighbourManager {
         }
 
         StoneNeighbours stoneNeighbours = new StoneNeighbours(northState, eastState, southState, westState);
-//        if(isSuicide(stoneNeighbours))
-//            throw new SuicideException("Cannot attempt suicide");
         arrayOfNeighbours.setNeighbours(x, y, stoneNeighbours);
 
     }
 
-    public void updateNeighbours(int x, int y){
+    public static void updateNeighbours(int x, int y){
         try{
             addNeighbours(x, y + 1);
         }catch (ArrayIndexOutOfBoundsException e){}
@@ -98,7 +95,7 @@ public class NeighbourManager {
 
     }
 
-    public void updateAllNeighbours(){
+    public static void updateAllNeighbours(){
         for(int i = 0; i < arrayOfNeighbours.getArraySize(); i++){
             for(int j = 0; j < arrayOfNeighbours.getArraySize(); j++){
                 updateNeighbours(i, j);
@@ -106,13 +103,5 @@ public class NeighbourManager {
         }
 
     }
-
-
-//    public boolean isSuicide(StoneNeighbours stoneNeighbours){
-//        if(stoneNeighbours.getNumberOfBreaths() == 0 && stoneNeighbours.getNumberOfConnections() == 0)
-//            return true;
-//        return false;
-//    }
-
 
 }

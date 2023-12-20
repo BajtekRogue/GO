@@ -1,11 +1,10 @@
 package Main;
 
-import GameObjects.ArrayOfNeighbours;
-import GameObjects.Board;
 import GameObjects.Stone;
 import GameObjects.StoneColor;
 import GameObjectsLogic.BoardManager;
 import GameObjectsLogic.CaptureManager;
+import GameObjectsLogic.GameMaster;
 import GameObjectsLogic.NeighbourManager;
 import MyExceptions.OccupiedTileException;
 import MyExceptions.SuicideException;
@@ -23,25 +22,18 @@ import javafx.stage.Stage;
 
 public class GoGUI extends Application {
 
-    private static final int BOARD_SIZE = 9;
+    private static final int BOARD_SIZE = 13;
     private static final int TILE_SIZE = 40;
     private static final double STONE_SIZE = 15;
     private static final double DOT_SIZE = 5;
 
 
-    private final BoardManager boardManager;
-    private final NeighbourManager neighbourManager;
-    private final CaptureManager captureManager;
     private StoneColor currentPlayer;
     private Canvas canvas;
     private Button[][] buttons;
 
     public GoGUI() {
-        Board board = new Board(BOARD_SIZE);
-        this.boardManager = new BoardManager(board);
-        ArrayOfNeighbours arrayOfNeighbours = new ArrayOfNeighbours(BOARD_SIZE);
-        this.neighbourManager = new NeighbourManager(board, arrayOfNeighbours);
-        this.captureManager = new CaptureManager(board, boardManager, neighbourManager);
+        GameMaster gameMaster = new GameMaster(BOARD_SIZE);
         this.currentPlayer = StoneColor.BLACK;
     }
 
@@ -108,10 +100,10 @@ public class GoGUI extends Application {
 
     private void handleButtonClick(int x, int y) {
         try {
-            boardManager.addStone(x, y, new Stone(currentPlayer));
-            neighbourManager.addNeighbours(x, y);
-            neighbourManager.updateNeighbours(x, y);
-            int capturedStones = captureManager.checkForCapture(x, y);
+            BoardManager.addStone(x, y, new Stone(currentPlayer));
+            NeighbourManager.addNeighbours(x, y);
+            NeighbourManager.updateNeighbours(x, y);
+            int capturedStones = CaptureManager.checkForCapture(x, y);
 
 //            if (capturedStones > 0 && currentPlayer == StoneColor.BLACK) {
 //                // Black player gets points for captures
@@ -119,7 +111,7 @@ public class GoGUI extends Application {
 //            }
 
             if (capturedStones == 0) {
-                captureManager.checkForSuicide(x, y);
+                CaptureManager.checkForSuicide(x, y);
             }
             updateStones();
             switchPlayer();
@@ -180,7 +172,7 @@ public class GoGUI extends Application {
     private void updateStones() {
         for (int y = BOARD_SIZE - 1; y >= 0; y--) {
             for (int x = 0; x < BOARD_SIZE; x++) {
-                Stone stone = boardManager.getStone(x, y);
+                Stone stone = BoardManager.getStone(x, y);
                 if (stone != null) {
                     Color stoneColor = (stone.getStoneColor() == StoneColor.WHITE) ? Color.WHITE : Color.BLACK;
                     buttons[x][y].setStyle("-fx-background-color: " + stoneColor.toString().replace("0x", "#") + ";");
