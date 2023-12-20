@@ -115,13 +115,6 @@ public class CaptureManager {
         return false;
     }
 
-    public static void checkForSuicide(int x, int y) throws SuicideException{
-        List<Coordinates> stonesToBeCaptured = lookForChain(x, y);
-        if(stonesToBeCaptured != null){
-            BoardManager.removeStone(x, y);
-            NeighbourManager.updateNeighbours(x, y);
-            throw new SuicideException("Cannot commit suicide!");
-        }
-    }
+
 
 }
