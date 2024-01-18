@@ -33,21 +33,4 @@ public class ArrayOfNeighbours {
         else
             throw new ArrayIndexOutOfBoundsException("Incorrect array position");
     }
-
-    public void printArray(){
-
-        for(int j = arraySize - 1; j >= 0; j--){
-            for(int i = 0; i < arraySize; i++){
-
-                StoneNeighbours stoneNeighbours = arrayOfNeighbours[i][j];
-                if(stoneNeighbours == null){
-                    //System.out.println("Tile (" + i + "," + j +") is empty");
-                }
-                else{
-                    System.out.println("Tile (" + i + "," + j +") has neighbours: north: " + stoneNeighbours.getNorth() + ", east: " + stoneNeighbours.getEast() + ", south: " + stoneNeighbours.getSouth() + ", west: " + stoneNeighbours.getWest());
-                }
-
-            }
-        }
-    }
 }
