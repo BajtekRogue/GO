@@ -58,4 +58,11 @@ public class BoardManager {
             return false;
     }
 
+    public void resetBoard() {
+        for(int j = board.getBoardSize() - 1; j >= 0; j--) {
+            for (int i = 0; i < board.getBoardSize(); i++) {
+                board.setTile(i, j, null);
+            }
+        }
+    }
 }
