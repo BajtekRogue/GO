@@ -4,6 +4,7 @@ import GameObjects.Board;
 import GameObjects.Coordinates;
 import GameObjects.NeighbourState;
 import GameObjects.StoneNeighbours;
+import java.util.HashSet;
 import MyExceptions.SuicideException;
 
 
@@ -19,12 +20,14 @@ public class CaptureManager {
     }
 
     public static int removeCapturedStones(List<Coordinates> stonesToBeRemoved){
-        for (Coordinates coordinates: stonesToBeRemoved)
+
+        HashSet<Coordinates> SetOfStonesToBeRemoved = new HashSet<>(stonesToBeRemoved);
+        
+        for (Coordinates coordinates: SetOfStonesToBeRemoved)
             BoardManager.removeStone(coordinates.getX(), coordinates.getY());
 
         NeighbourManager.updateAllNeighbours();
-        return stonesToBeRemoved.size();
-
+        return SetOfStonesToBeRemoved.size();
     }
     public static List<Coordinates> checkForCapture(int x, int y){
         List<Coordinates> stonesToBeCaptured = new ArrayList<>();

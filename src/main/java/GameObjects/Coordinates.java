@@ -1,5 +1,7 @@
 package GameObjects;
 
+import java.util.Objects;
+
 public class Coordinates {
 
     private int x;
@@ -21,6 +23,19 @@ public class Coordinates {
 
     public int getY() {
         return y;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+        Coordinates that = (Coordinates) obj;
+        return x == that.x && y == that.y;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(x, y);
     }
 }
 
