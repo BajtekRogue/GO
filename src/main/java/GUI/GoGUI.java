@@ -1,4 +1,4 @@
-package Main;
+package GUI;
 
 import GameObjects.Coordinates;
 import GameObjects.Stone;
@@ -40,7 +40,6 @@ public class GoGUI extends Application {
     private Button[][] buttons;
     public GoGUI() {
         // gameMaster creates all managers to avoid high-coupling
-        GameMaster gameMaster = new GameMaster(BOARD_SIZE);
         this.currentPlayer = StoneColor.BLACK;
     }
 

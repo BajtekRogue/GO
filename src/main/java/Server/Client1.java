@@ -1,5 +1,6 @@
 package Server;
 
+import GUI.GameModeSelectionGUI;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.stage.Stage;
@@ -8,111 +9,116 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.util.Scanner;
 import java.util.concurrent.CountDownLatch;
 
-public class Client1 extends Application implements PlayerTypeSelectionListener {
+public class Client1 extends Application{
 
-    private static ObjectOutputStream out;
-    private static ObjectInputStream in;
-    private Socket socket;
-    private CountDownLatch playerReadyLatch = new CountDownLatch(1);
-    private boolean isThereAnotherPlayer = false;
-    private boolean isThereABot = false;
+    private final static int PORT = 1161;
+    private static ObjectOutputStream outputStream;
+    private static ObjectInputStream inputStream;
+    private static Socket socket;
 
     public static void main(String[] args) {
-        new Client1().run();
+        run();
     }
 
-    public void run() {
+    public static void run() {
         try {
-            socket = new Socket("localhost", 8080);
-            out = new ObjectOutputStream(socket.getOutputStream());
-            in = new ObjectInputStream(socket.getInputStream());
-            String notification1 = (String) in.readObject();
+            socket = new Socket("localhost", PORT);
+            outputStream = new ObjectOutputStream(socket.getOutputStream());
+            inputStream = new ObjectInputStream(socket.getInputStream());
+            String notification1 = receiveMessage();
+            GameModeSelectionGUI gameModeSelectionGUI = new GameModeSelectionGUI();
+            System.out.println(notification1);
 
-            if (notification1.equals("You are the first player. Please choose player type.")) {
+            if (notification1.equals("You have successfully connected to the server as player1")) {
+                CountDownLatch guiLatch = new CountDownLatch(1);
+
                 Platform.runLater(() -> {
-                    GameModeSelectionGUI gameModeSelectionGUI = new GameModeSelectionGUI(this);
                     gameModeSelectionGUI.start(new Stage());
+                    guiLatch.countDown();  // This counts down the latch
                 });
-            }
 
-            // Wait until the latch is counted down in onPlayerTypeSelected
-            playerReadyLatch.await();
-            System.out.println("Player ready");
-
-            String notification2 = (String) in.readObject();
-            System.out.println(notification2);
-            String notification3 = (String) in.readObject();
-
-            if(notification3.equals("Player 2 has joined")){
-                System.out.println(notification3);
-                System.out.println("The game begins");
-                playingTheGame();
+                // Wait for the GUI to be shown on the JavaFX application thread
+                guiLatch.await();
             }
 
 
-        } catch (IOException | ClassNotFoundException | InterruptedException e) {
-            e.printStackTrace();
-        }
-    }
-
-    @Override
-    public void onPlayerTypeSelected(String playerType) {
-        try {
-            // Now you can use 'out' here to send the player type to the server
-            if ("Human".equals(playerType)) {
-                isThereAnotherPlayer = true;
-            } else if ("Bot".equals(playerType)) {
-                isThereABot = true;
+            while (gameModeSelectionGUI.isWindowOpen()) {
+                Thread.sleep(1000);  // Adjust the sleep time as needed
             }
-            out.writeObject(new GameRequest(playerType));
-            playerReadyLatch.countDown(); // Count down the latch to release the waiting thread
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
 
-    @Override
-    public void start(Stage stage) {
-        // Implement the start method as needed
-    }
+            String gameMode = gameModeSelectionGUI.getSelectedGameMode();
+            System.out.println("Selected game mode: " + gameMode);
+            sendMessage(gameMode);
 
-    public void playingTheGame(){
-
-//        while(true){
-//            try{
-//                Thread.sleep(2000);
-//                System.out.println("A");
-//            }catch (InterruptedException e){
-//                e.printStackTrace();
-//            }
-//
-//
-//        }
-        int i = 0;
-
-        while (true){
-            try{
-                String notification = (String) in.readObject();
-                System.out.println(notification);
-
-                switch (notification){
-                    case "Correct move":
-                        break;
-                    case "Incorrect move":
-                        break;
-                    default:
-                        break;
+            if(gameMode.equals("Human")){
+                System.out.println("Waiting for player2 to join...");
+                String notification2 = receiveMessage();
+                System.out.println(notification2);
+                if(notification2.equals("Player2 has successfully connected")){
+                    playAgainstHuman();
                 }
-
-                out.writeObject(new GameRequest(Integer.toString(i)));
-                i++;
-
-            }catch(IOException | ClassNotFoundException e){
-                e.printStackTrace();
+            }else{
+                playAgainstBot();
             }
 
+
+
+
+        }catch(IOException e) {
+            System.out.println("Connection error has occurred");
+        }catch(ClassNotFoundException e){
+            System.out.println("Class not found exception");
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            System.out.println("Interrupted while waiting for user selection");
         }
+    }
+
+
+
+
+    private static String receiveMessage() throws IOException, ClassNotFoundException {
+        String notification = (String) inputStream.readObject();
+        return notification;
+    }
+
+    private static void sendMessage(String message) throws IOException {
+        outputStream.writeObject(message);
+    }
+
+    public static void playAgainstBot() throws InterruptedException {
+        while(true){
+            Thread.sleep(1000);
+            System.out.println("Bot");
+        }
+        //add
+    }
+
+    public static void playAgainstHuman() throws InterruptedException, IOException, ClassNotFoundException {
+
+        Scanner scanner = new Scanner(System.in);
+        String message = receiveMessage();
+        System.out.println(message);
+        boolean isGameOngoing = true;
+        String currentMove = "";
+
+        while(isGameOngoing){
+
+            message = receiveMessage();
+            System.out.println(message);
+
+            if(message.equals("Your move") || message.equals("Your move was incorrect"))
+                currentMove = scanner.nextLine();
+
+            sendMessage(currentMove);
+        }
+    }
+
+    @Override
+    public void start(Stage stage) throws Exception {
+
     }
 }

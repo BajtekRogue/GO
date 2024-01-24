@@ -1,16 +1,13 @@
-package Server;
+package GUI;
+
 
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
-import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-
-import java.io.IOException;
-import java.io.ObjectOutputStream;
 
 public class GameModeSelectionGUI extends Application {
 
@@ -18,18 +15,15 @@ public class GameModeSelectionGUI extends Application {
     private Button botButton;
     private VBox vbox;
     private Scene scene;
-    private PlayerTypeSelectionListener listener;
+    private String selectedGameMode;
 
-    // Constructor with the listener parameter
-    public GameModeSelectionGUI(PlayerTypeSelectionListener listener) {
-        this.listener = listener;
+    public String getSelectedGameMode() {
+        return selectedGameMode;
     }
-    // This method allows you to launch the application from another class
 
-    // Default constructor
     public GameModeSelectionGUI() {
-        // Empty constructor
     }
+
     @Override
     public void start(Stage primaryStage) {
 
@@ -55,24 +49,19 @@ public class GameModeSelectionGUI extends Application {
 
     private void handlePlayerTypeSelection(String playerType) {
 
-            // Send the player type to the server
-            listener.onPlayerTypeSelected(playerType);
-
-            // Implement game logic for the chosen player type
-            if ("Human".equals(playerType)) {
-                System.out.println("Selected human");
-            } else if ("Bot".equals(playerType)) {
-                System.out.println("Selected bot");
-            }
-
-            Platform.runLater(() -> {
-                Stage stage = (Stage) vbox.getScene().getWindow();
-                stage.close();
-            });
-
-
-
-
+        selectedGameMode = playerType;
+        Platform.runLater(() -> {
+            Stage stage = (Stage) vbox.getScene().getWindow();
+            stage.close();
+        });
     }
+
+
+    public boolean isWindowOpen() {
+        Stage stage = (Stage) vbox.getScene().getWindow();
+        return stage.isShowing();
+    }
+
 }
+
 

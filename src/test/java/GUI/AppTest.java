@@ -1,4 +1,4 @@
-package Main;
+package GUI;
 
 import junit.framework.Test;
 import junit.framework.TestCase;

@@ -1,90 +1,74 @@
 package Server;
 
 import javafx.application.Application;
-import javafx.application.Platform;
 import javafx.stage.Stage;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
-import java.util.concurrent.CountDownLatch;
+import java.util.Scanner;
 
-public class Client2 extends Application {
+public class Client2{
 
-    private static ObjectOutputStream out;
-    private static ObjectInputStream in;
-    private CountDownLatch playerReadyLatch = new CountDownLatch(1);
-    private boolean isThereAnotherPlayer = false;
-    private boolean isThereABot = false;
+    private final static int PORT = 1161;
+    private static ObjectOutputStream outputStream;
+    private static ObjectInputStream inputStream;
+    private static Socket socket;
 
     public static void main(String[] args) {
-        new Client2().run();
+        run();
     }
 
-    public void run() {
+    public static void run() {
         try {
-            Socket socket = new Socket("localhost", 8080);
-            out = new ObjectOutputStream(socket.getOutputStream());
-            in = new ObjectInputStream(socket.getInputStream());
-            String notification1 = (String) in.readObject();
-            System.out.println(notification1);
-            if (notification1.equals("You are the second player.")) {
-                out.writeObject(new GameRequest("Player 2 ready"));
+            socket = new Socket("localhost", PORT);
+            outputStream = new ObjectOutputStream(socket.getOutputStream());
+            inputStream = new ObjectInputStream(socket.getInputStream());
+            String notification1 = receiveMessage();
+
+            if (notification1.equals("You have successfully connected to the server as player2")) {
+                playAgainstHuman();
             }
 
-            System.out.println("The game begins");
-            playingTheGame();
 
-
-        } catch (IOException | ClassNotFoundException  e) {
-            e.printStackTrace();
+        }catch(IOException e) {
+            System.out.println("Connection error has occurred");
+        }catch(ClassNotFoundException e){
+            System.out.println("Class not found exception");
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            System.out.println("Interrupted while waiting for user selection");
         }
     }
 
 
-
-    @Override
-    public void start(Stage stage) {
-        // Implement the start method as needed
+    private static String receiveMessage() throws IOException, ClassNotFoundException {
+        String notification = (String) inputStream.readObject();
+        return notification;
     }
 
-    public void playingTheGame(){
+    private static void sendMessage(String message) throws IOException {
+        outputStream.writeObject(message);
+    }
 
-//        while(true){
-//            try{
-//                Thread.sleep(2000);
-//                System.out.println("B");
-//            }catch (InterruptedException e){
-//                e.printStackTrace();
-//            }
-//
-//
-//        }
+    public static void playAgainstHuman() throws InterruptedException, IOException, ClassNotFoundException {
 
-        int i = 0;
+        Scanner scanner = new Scanner(System.in);
+        String message = receiveMessage();
+        System.out.println(message);
+        boolean isGameOngoing = true;
+        String currentMove = "";
 
-        while (true){
-            try{
-                String notification = (String) in.readObject();
-                System.out.println(notification);
+        while(isGameOngoing){
 
-                switch (notification){
-                    case "Correct move":
-                        break;
-                    case "Incorrect move":
-                        break;
-                    default:
-                        break;
-                }
+            message = receiveMessage();
+            System.out.println(message);
 
-                out.writeObject(new GameRequest(Integer.toString(i)));
-                i--;
+            if(message.equals("Your move") || message.equals("Your move was incorrect"))
+                currentMove = scanner.nextLine();
 
-            }catch(IOException | ClassNotFoundException e){
-                e.printStackTrace();
-            }
-
+            sendMessage(currentMove);
         }
     }
 }
