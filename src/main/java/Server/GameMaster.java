@@ -33,12 +33,12 @@ public class GameMaster {
             System.out.println("Player " + currentPlayer.toString() + " move");
             Server.sendNotification(currentPlayer, "Your move");
             currentMove = Server.receiveNotification(currentPlayer);
-            boolean isMoveOK = isMoveValid(Integer.parseInt(currentMove));
+            boolean isMoveOK = isMoveValid(currentMove);
 
             while(!isMoveOK) {
                 Server.sendNotification(currentPlayer, "Your move was incorrect");
                 currentMove = Server.receiveNotification(currentPlayer);
-                isMoveOK = isMoveValid(Integer.parseInt(currentMove));
+                isMoveOK = isMoveValid(currentMove);
             }
 
             System.out.println("Player " + currentPlayer.toString() + " made a move: " + currentMove);
@@ -50,8 +50,17 @@ public class GameMaster {
         currentPlayer = (currentPlayer == StoneColor.WHITE) ? StoneColor.BLACK : StoneColor.WHITE;
     }
 
-    public boolean isMoveValid(int i){
-        if(i > 0 && i < 7)
+    public boolean isMoveValid(String currentMove){
+
+        int x;
+        int y;
+        try{
+            x = Integer.parseInt(currentMove);
+        }catch (NumberFormatException e){
+            x = 0;
+        }
+
+        if(x > 0 && x < 7)
             return true;
         else
             return false;
