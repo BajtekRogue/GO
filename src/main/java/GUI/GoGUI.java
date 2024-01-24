@@ -44,8 +44,8 @@ public class GoGUI extends Application {
         this.currentPlayer = StoneColor.BLACK;
     }
 
-    public static void main(String[] args) {
-        GameMaster gameMaster = new GameMaster(BOARD_SIZE);
+    public static void launchGUI(String[] args) {
+
         launch(args);
     }
 

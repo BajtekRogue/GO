@@ -9,6 +9,7 @@ import GameObjectsLogic.NeighbourManager;
 import java.io.IOException;
 
 public class GameMaster {
+    private final Board board;
     private final BoardManager boardManager;
     private final NeighbourManager neighbourManager;
     private final CaptureManager captureManager;
@@ -17,7 +18,7 @@ public class GameMaster {
 
 
     public GameMaster(int boardSize){
-        Board board = new Board(boardSize);
+        this.board = new Board(boardSize);
         this.boardManager = new BoardManager(board);
         this.neighbourManager = new NeighbourManager(board);
         this.captureManager = new CaptureManager(board);

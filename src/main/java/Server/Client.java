@@ -1,6 +1,7 @@
 package Server;
 
 import GUI.GameModeSelectionGUI;
+import GUI.GoGUI;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.stage.Stage;
@@ -12,7 +13,7 @@ import java.net.Socket;
 import java.util.Scanner;
 import java.util.concurrent.CountDownLatch;
 
-public class Client1 extends Application{
+public class Client extends Application{
 
     private final static int PORT = 1161;
     private static ObjectOutputStream outputStream;
@@ -108,6 +109,7 @@ public class Client1 extends Application{
         System.out.println(message);
         boolean isGameOngoing = true;
         String currentMove = "";
+
 
         while(isGameOngoing){
 
