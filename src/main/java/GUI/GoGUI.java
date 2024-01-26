@@ -3,10 +3,14 @@ package GUI;
 import GameObjects.Coordinates;
 import GameObjects.Stone;
 import GameObjects.StoneColor;
-import GameObjectsLogic.*;
+import GameObjectsLogic.BoardManager;
+import GameObjectsLogic.CaptureManager;
+import GameObjectsLogic.ExceptionManager;
+import GameObjectsLogic.NeighbourManager;
 import MyExceptions.KOException;
 import MyExceptions.OccupiedTileException;
 import MyExceptions.SuicideException;
+import Server.Client;
 import Server.GameMaster;
 import javafx.application.Application;
 import javafx.geometry.Insets;
@@ -21,6 +25,7 @@ import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 
+import java.io.IOException;
 import java.util.List;
 
 public class GoGUI extends Application {
@@ -35,13 +40,14 @@ public class GoGUI extends Application {
     private Label turnLabel;
     private Label pointsLabel;
 
-
     private StoneColor currentPlayer;
     private Canvas canvas;
     private Button[][] buttons;
-    public GoGUI() {
-        // gameMaster creates all managers to avoid high-coupling
+    private  Client client;
+    public GoGUI(Client client) {
+        GameMaster gameMaster = new GameMaster(BOARD_SIZE);
         this.currentPlayer = StoneColor.BLACK;
+        this.client = client;
     }
 
     public static void launchGUI(String[] args) {
@@ -51,6 +57,8 @@ public class GoGUI extends Application {
 
     @Override
     public void start(Stage primaryStage) {
+//        GameMaster gameMaster = new GameMaster(BOARD_SIZE);
+//        this.currentPlayer = StoneColor.BLACK;
         primaryStage.setTitle("Go Game");
         primaryStage.setResizable(false);
         Pane root = new Pane();
@@ -188,6 +196,8 @@ public class GoGUI extends Application {
 
     private void handleButtonClick(int x, int y) {
         try {
+
+
             BoardManager.addStone(x, y, new Stone(currentPlayer));
             NeighbourManager.addNeighbours(x, y);
             NeighbourManager.updateNeighbours(x, y);

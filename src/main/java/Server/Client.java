@@ -19,12 +19,16 @@ public class Client extends Application{
     private static ObjectOutputStream outputStream;
     private static ObjectInputStream inputStream;
     private static Socket socket;
+    private boolean isPlayerReady = false;
 
-    public static void main(String[] args) {
-        run();
+    public Client(){
+
+    }
+    public boolean isPlayerReady(){
+        return isPlayerReady;
     }
 
-    public static void run() {
+    public void run() {
         try {
             socket = new Socket("localhost", PORT);
             outputStream = new ObjectOutputStream(socket.getOutputStream());
@@ -56,6 +60,7 @@ public class Client extends Application{
                     String notification2 = receiveMessage();
                     System.out.println(notification2);
                     if(notification2.equals("Player2 has successfully connected")){
+                        isPlayerReady = true;
                         playAgainstHuman();
                     }
                 }else{
@@ -63,6 +68,7 @@ public class Client extends Application{
                 }
             }
             else if (notification1.equals("You have successfully connected to the server as player2")) {
+                isPlayerReady = true;
                 playAgainstHuman();
             }
 
@@ -85,16 +91,16 @@ public class Client extends Application{
 
 
 
-    private static String receiveMessage() throws IOException, ClassNotFoundException {
+    public String receiveMessage() throws IOException, ClassNotFoundException {
         String notification = (String) inputStream.readObject();
         return notification;
     }
 
-    private static void sendMessage(String message) throws IOException {
+    public void sendMessage(String message) throws IOException {
         outputStream.writeObject(message);
     }
 
-    public static void playAgainstBot() throws InterruptedException {
+    public void playAgainstBot() throws InterruptedException {
         while(true){
             Thread.sleep(1000);
             System.out.println("Bot");
@@ -102,7 +108,8 @@ public class Client extends Application{
         //add
     }
 
-    public static void playAgainstHuman() throws InterruptedException, IOException, ClassNotFoundException {
+    public void playAgainstHuman() throws InterruptedException, IOException, ClassNotFoundException {
+
 
         Scanner scanner = new Scanner(System.in);
         String message = receiveMessage();
@@ -111,20 +118,54 @@ public class Client extends Application{
         String currentMove = "";
 
 
-        while(isGameOngoing){
+        CountDownLatch guiLatch = new CountDownLatch(1);
 
-            message = receiveMessage();
-            System.out.println(message);
+        // Launch the first JavaFX application in a separate thread
+        new Thread(() -> {
+            Platform.runLater(() -> {
+                GoGUI goGUI = new GoGUI(this);
+                try {
+                    goGUI.start(new Stage());
+                } catch (Exception e) {
+                    e.printStackTrace();
+                } finally {
+                    // Count down the latch when the GUI is launched
+                    guiLatch.countDown();
+                }
+            });
+        }).start();
 
-            if(message.equals("Your move") || message.equals("Your move was incorrect"))
-                currentMove = scanner.nextLine();
+        // Wait for the first GUI to be launched
+        guiLatch.await();
 
-            sendMessage(currentMove);
-        }
+        // Launch the second JavaFX application in a separate thread
+        new Thread(() -> {
+            Platform.runLater(() -> {
+                GoGUI secondGoGUI = new GoGUI(this);
+                try {
+                    secondGoGUI.start(new Stage());
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            });
+        }).start();
+
+//        while(isGameOngoing){
+//
+//            message = receiveMessage();
+//            System.out.println(message);
+//
+//            if(message.equals("Your move") || message.equals("Your move was incorrect"))
+//                currentMove = scanner.nextLine();
+//
+//            sendMessage(currentMove);
+//        }
     }
 
     @Override
     public void start(Stage stage) throws Exception {
 
     }
+
+
 }

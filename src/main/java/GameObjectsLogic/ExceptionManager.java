@@ -11,7 +11,7 @@ public class ExceptionManager {
     private static Coordinates KO_coordinates = new Coordinates(-1, -1);
 
     public static void setKO_coordinates(Coordinates KO_position) {
-        ExceptionManager.KO_coordinates = KO_position;
+        KO_coordinates = KO_position;
     }
 
     public static Coordinates getKO_coordinates() {
@@ -24,6 +24,12 @@ public class ExceptionManager {
 
     public static void checkForSuicide(int x, int y) throws SuicideException {
         List<Coordinates> stonesToBeCaptured = CaptureManager.lookForChain(x, y);
+
+        //if no stones can be captured return. If something breaks remove isEmpty()
+        if (stonesToBeCaptured == null || stonesToBeCaptured.isEmpty())
+            return;
+
+
         if(stonesToBeCaptured != null){
             BoardManager.removeStone(x, y);
             NeighbourManager.updateNeighbours(x, y);

@@ -21,13 +21,11 @@ public class CaptureManager {
 
     public static int removeCapturedStones(List<Coordinates> stonesToBeRemoved){
 
-        HashSet<Coordinates> SetOfStonesToBeRemoved = new HashSet<>(stonesToBeRemoved);
-        
-        for (Coordinates coordinates: SetOfStonesToBeRemoved)
+        for (Coordinates coordinates: stonesToBeRemoved)
             BoardManager.removeStone(coordinates.getX(), coordinates.getY());
 
         NeighbourManager.updateAllNeighbours();
-        return SetOfStonesToBeRemoved.size();
+        return stonesToBeRemoved.size();
     }
     public static List<Coordinates> checkForCapture(int x, int y){
         List<Coordinates> stonesToBeCaptured = new ArrayList<>();
@@ -36,7 +34,6 @@ public class CaptureManager {
         List<Coordinates> stonesToBeCapturedSouth;
         List<Coordinates> stonesToBeCapturedWest;
         StoneNeighbours lastPlacedStoneNeighbours = NeighbourManager.getArrayOfNeighbours().getNeighbours(x, y);
-        int totalRemovedStones = 0;
 
         if(lastPlacedStoneNeighbours.getNorth() == NeighbourState.ENEMY){
             stonesToBeCapturedNorth = lookForChain(x, y + 1);
@@ -61,7 +58,9 @@ public class CaptureManager {
                 stonesToBeCaptured.addAll(stonesToBeCapturedWest);
         }
 
-        return stonesToBeCaptured;
+        HashSet<Coordinates> SetOfStonesToBeRemoved = new HashSet<>(stonesToBeCaptured);
+        List<Coordinates> stonesToBeCaptured2 = new ArrayList<>(SetOfStonesToBeRemoved);
+        return stonesToBeCaptured2;
     }
 
     public static List<Coordinates> lookForChain(int x, int y) {
