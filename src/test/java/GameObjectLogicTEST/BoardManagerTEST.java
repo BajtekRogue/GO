@@ -35,7 +35,7 @@ public class BoardManagerTEST {
 
         try {
             boardManager.addStone(1, 1, stone);
-        } catch (ArrayIndexOutOfBoundsException | OccupiedTileException e) {
+        } catch (ArrayIndexOutOfBoundsException e) {
             fail("Unexpected exception: " + e.getMessage());
         }
 
@@ -50,28 +50,13 @@ public class BoardManagerTEST {
         assertNull(boardManager.getStone(1, 1));
     }
 
-    @Test(expected = OccupiedTileException.class)
-    public void testAddStoneOccupiedTileException() throws OccupiedTileException {
-        Stone stone1 = new Stone(StoneColor.WHITE);
-        Stone stone2 = new Stone(StoneColor.BLACK);
-
-        try {
-            boardManager.addStone(0, 0, stone1);
-            boardManager.addStone(0, 0, stone2);
-        } catch (ArrayIndexOutOfBoundsException e) {
-            fail("Unexpected exception: " + e.getMessage());
-        }
-
-        boardManager.addStone(0, 0, stone2);
-    }
-
     @Test
     public void testIsTileFree() {
         assertTrue(boardManager.isTileFree(0, 0));
 
         try {
             boardManager.addStone(0, 0, new Stone(StoneColor.WHITE));
-        } catch (ArrayIndexOutOfBoundsException | OccupiedTileException e) {
+        } catch (ArrayIndexOutOfBoundsException e) {
             fail("Unexpected exception: " + e.getMessage());
         }
 
@@ -84,7 +69,7 @@ public class BoardManagerTEST {
 
         try {
             boardManager.addStone(1, 1, stone);
-        } catch (ArrayIndexOutOfBoundsException | OccupiedTileException e) {
+        } catch (ArrayIndexOutOfBoundsException e) {
             fail("Unexpected exception: " + e.getMessage());
         }
 

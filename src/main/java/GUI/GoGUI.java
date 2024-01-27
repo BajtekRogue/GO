@@ -1,18 +1,13 @@
 package GUI;
 
+import GameObjects.Board;
 import GameObjects.Coordinates;
 import GameObjects.Stone;
 import GameObjects.StoneColor;
 import GameObjectsLogic.BoardManager;
-import GameObjectsLogic.CaptureManager;
-import GameObjectsLogic.ExceptionManager;
-import GameObjectsLogic.NeighbourManager;
-import MyExceptions.KOException;
-import MyExceptions.OccupiedTileException;
-import MyExceptions.SuicideException;
 import Server.Client;
-import Server.GameMaster;
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
@@ -27,6 +22,7 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 public class GoGUI extends Application {
@@ -35,8 +31,8 @@ public class GoGUI extends Application {
     private static final int TILE_SIZE = 40;
     private static final double STONE_SIZE = 15;
     private static final double DOT_SIZE = 5;
-    private int WHITE_POINTS = 0;
-    private int BLACK_POINTS = 0;
+    private int whitePoints = 0;
+    private int blackPoints = 0;
     private int consecutivePasses = 0;
     private Label turnLabel;
     private Label pointsLabel;
@@ -44,23 +40,18 @@ public class GoGUI extends Application {
     private StoneColor currentPlayer;
     private Canvas canvas;
     private Button[][] buttons;
-    private  Client client;
+    private Client client;
+    private Board board;
 
     public GoGUI(Client client) {
-        GameMaster gameMaster = new GameMaster(BOARD_SIZE);
+        this.board = new Board(BOARD_SIZE);
         this.currentPlayer = StoneColor.BLACK;
         this.client = client;
     }
 
-    public static void launchGUI(String[] args) {
-
-        launch(args);
-    }
-
     @Override
-    public void start(Stage primaryStage) throws IOException {
-//        GameMaster gameMaster = new GameMaster(BOARD_SIZE);
-//        this.currentPlayer = StoneColor.BLACK;
+    public void start(Stage primaryStage) throws IOException{
+
         primaryStage.setTitle("Go Game");
         primaryStage.setResizable(false);
         Pane root = new Pane();
@@ -105,13 +96,25 @@ public class GoGUI extends Application {
         Button passButton = new Button("Pass Turn");
         passButton.setLayoutY(260);
         passButton.setLayoutX(75);
-        passButton.setOnAction(e -> handlePassButtonClick());
+        passButton.setOnAction(e -> {
+            try {
+                handlePassButtonClick();
+            } catch (IOException ex) {
+                throw new RuntimeException(ex);
+            }
+        });
 
         // FF Button
         Button surrenderButton = new Button("Forfeit");
         surrenderButton.setLayoutY(290);
         surrenderButton.setLayoutX(75);
-        surrenderButton.setOnAction(e -> handleSurrenderButtonClick());
+        surrenderButton.setOnAction(e -> {
+            try {
+                handleSurrenderButtonClick();
+            } catch (IOException ex) {
+                throw new RuntimeException(ex);
+            }
+        });
 
         infoPane.getChildren().addAll(turnLabel, pointsLabel, passButton, surrenderButton);
         root.getChildren().addAll(separatorLine, infoPane);
@@ -143,6 +146,14 @@ public class GoGUI extends Application {
                 primaryStage.close();
             }
         }
+
+        // wait for player to be ready to change the title
+//        while(client.getPlayerColor() == null){}
+//
+//        if(client.getPlayerColor() == StoneColor.WHITE)
+//                primaryStage.setTitle("Go Game: Player White");
+//            else
+//                primaryStage.setTitle("Go Game: Player Black");
     }
 
     private boolean askForBot() {
@@ -177,16 +188,8 @@ public class GoGUI extends Application {
         turnLabel.setTextFill((currentPlayer == StoneColor.BLACK) ? Color.BLACK : Color.WHITE);
 
         // Update points label
-        pointsLabel.setText("Black Points: " + BLACK_POINTS + "   White Points: " + WHITE_POINTS);
+        pointsLabel.setText("Black Points: " + blackPoints + "   White Points: " + whitePoints);
     }
-
-    private int calculatePoints(int capturedStones) {
-
-        return 0;
-    }
-
-
-
 
     private Button createButton(int x, int y) {
         Button button = new Button();
@@ -207,8 +210,8 @@ public class GoGUI extends Application {
         });
         // Add highlighting effect on mouse enter for empty buttons
         button.setOnMouseEntered(event -> {
-            if (BoardManager.getStone(x, y) == null) {
-                StoneColor stoneColor = currentPlayer;
+            if (board.getTile(x, y) == null && client.isMyTurn()) {
+                StoneColor stoneColor = client.getPlayerColor();
                 Color highlightColor = (stoneColor == StoneColor.WHITE) ? Color.WHITE : Color.BLACK;
                 highlightColor = highlightColor.deriveColor(0, 1, 1, 0.5);
                 button.setStyle("-fx-background-color: " + highlightColor.toString().replace("0x", "#") + ";");
@@ -217,7 +220,7 @@ public class GoGUI extends Application {
 
         // Remove highlighting effect on mouse exit
         button.setOnMouseExited(event -> {
-            Stone stone = BoardManager.getStone(x, y);
+            Stone stone = board.getTile(x, y);
             if (stone != null) {
                 Color stoneColor = (stone.getStoneColor() == StoneColor.WHITE) ? Color.WHITE : Color.BLACK;
                 button.setStyle("-fx-background-color: " + stoneColor.toString().replace("0x", "#") + ";");
@@ -229,50 +232,16 @@ public class GoGUI extends Application {
     }
 
     private void handleButtonClick(int x, int y) throws IOException {
-//        try {
-//            BoardManager.addStone(x, y, new Stone(currentPlayer));
-//            NeighbourManager.addNeighbours(x, y);
-//            NeighbourManager.updateNeighbours(x, y);
-//            List<Coordinates> capturedStones = CaptureManager.checkForCapture(x, y);
-//
-//            // if KO then don't capture stones
-//            ExceptionManager.checkForKO(x, y);
-//            int numberOfCapturedStones = CaptureManager.removeCapturedStones(capturedStones);
-//            if (numberOfCapturedStones > 0) {
-//                if(currentPlayer == StoneColor.BLACK){
-//                    BLACK_POINTS += numberOfCapturedStones;
-//                } else {
-//                    WHITE_POINTS += numberOfCapturedStones;
-//                }
-//            }
-//            if (numberOfCapturedStones == 0) {
-//                ExceptionManager.checkForSuicide(x, y);
-//            }
-//
-//            if(numberOfCapturedStones == 1)
-//                ExceptionManager.setKO_coordinates(capturedStones.get(0));
-//            else
-//                ExceptionManager.restKO_coordinates();
+        if(client.isMyTurn())
             client.sendMove(x,y);
-            updateStones();
-            switchPlayer();
-            updateInfo();
-            consecutivePasses = 0;
-//        } catch (OccupiedTileException | SuicideException | KOException ex) {
-//            showAlert(ex.getMessage());
-//        }
     }
-    private void handleSurrenderButtonClick() {
-        StoneColor winner = (currentPlayer == StoneColor.BLACK) ? StoneColor.WHITE : StoneColor.BLACK;
-        showWinnerDialog(winner);
+    private void handleSurrenderButtonClick() throws IOException {
+        if(client.isMyTurn())
+            client.sendSurrender();
     }
-    private void handlePassButtonClick() {
-        switchPlayer();
-        updateInfo();
-        consecutivePasses++;
-        if (consecutivePasses >= 2) {
-            endGame();
-        }
+    private void handlePassButtonClick() throws IOException {
+        if(client.isMyTurn())
+            client.sendPass();
     }
 
     private void showWinnerDialog(StoneColor winner) {
@@ -304,9 +273,9 @@ public class GoGUI extends Application {
         }
     }
     private void endGame() {
-        if(BLACK_POINTS>WHITE_POINTS) {
+        if(blackPoints > whitePoints) {
             showWinnerDialog(StoneColor.BLACK);
-        } else if (WHITE_POINTS>BLACK_POINTS) {
+        } else if (whitePoints > blackPoints) {
             showWinnerDialog(StoneColor.WHITE);
         } else{
             showDrawDialog();
@@ -321,8 +290,8 @@ public class GoGUI extends Application {
 
     private void resetGame() {
         // Reset points
-        BLACK_POINTS = 0;
-        WHITE_POINTS = 0;
+        blackPoints = 0;
+        whitePoints = 0;
 
         // Reset board
         BoardManager.resetBoard();
@@ -389,24 +358,115 @@ public class GoGUI extends Application {
     private void updateStones() {
         for (int y = BOARD_SIZE - 1; y >= 0; y--) {
             for (int x = 0; x < BOARD_SIZE; x++) {
-                Stone stone = BoardManager.getStone(x, y);
+                Stone stone = board.getTile(x, y);
                 if (stone != null) {
                     Color stoneColor = (stone.getStoneColor() == StoneColor.WHITE) ? Color.WHITE : Color.BLACK;
                     buttons[x][y].setStyle("-fx-background-color: " + stoneColor.toString().replace("0x", "#") + ";");
                 } else {
-                    // if the stone is null then there is no stone placed at (x,y) so button is transparent
                     buttons[x][y].setStyle("-fx-background-color: transparent;");
                 }
             }
         }
     }
 
-    private void switchPlayer() {
+    public void switchPlayer() {
         currentPlayer = (currentPlayer == StoneColor.WHITE) ? StoneColor.BLACK : StoneColor.WHITE;
     }
 
-    public static void showAlert(String message) {
-        Alert alert = new Alert(Alert.AlertType.ERROR, message, ButtonType.OK);
-        alert.showAndWait();
+    public void showAlert(String message) {
+        if(currentPlayer == client.getPlayerColor()){
+            Platform.runLater(() -> {
+                Alert alert = new Alert(Alert.AlertType.ERROR, message, ButtonType.OK);
+                alert.showAndWait();
+            });
+        }
+    }
+
+    public void addStonesToBoard(Coordinates coordinates){
+        board.setTile(coordinates.getX(), coordinates.getY(), new Stone(currentPlayer));
+    }
+
+    public void removeStonesFromBoard(List<Coordinates> listOfStones){
+        int points = listOfStones.size();
+        for(Coordinates coordinates: listOfStones)
+                board.setTile(coordinates.getX(), coordinates.getY(), null);
+
+        if(currentPlayer == StoneColor.WHITE)
+            whitePoints += points;
+        else
+            blackPoints += points;
+    }
+
+    public Coordinates stonesToBeAddedFromStringToCoordinates(String message){
+
+        String[] tokens = message.split("\\s+");
+        int xIndex = -1;
+        int yIndex = -1;
+
+        for (int i = 0; i < tokens.length; i++) {
+            if (tokens[i].equals("OK")) {
+                if (i + 2 < tokens.length) {
+                    xIndex = i + 2;
+                    yIndex = i + 3;
+                    break;
+                }
+            }
+        }
+
+        if (xIndex != -1 && yIndex != -1 && xIndex < tokens.length && yIndex < tokens.length) {
+            try {
+                int x = Integer.parseInt(tokens[xIndex]);
+                int y = Integer.parseInt(tokens[yIndex]);
+                return new Coordinates(x, y);
+            } catch (NumberFormatException e) {}
+        }
+
+        return new Coordinates(-1, -1);
+    }
+
+    public List<Coordinates> stonesToBeRemovedFromStringToCoordinates(String message){
+        List<Coordinates> coordinatesList = new ArrayList<>();
+        String[] tokens = message.split("\\s+");
+
+        for (int i = 0; i < tokens.length; i++) {
+            if (tokens[i].equals("REMOVED")) {
+                int remainingTokens = tokens.length - i - 1;
+                if (remainingTokens >= 2 && remainingTokens % 2 == 0) {
+                    for (int j = 0; j < remainingTokens; j += 2) {
+                        try {
+                            int x = Integer.parseInt(tokens[i + j + 1]);
+                            int y = Integer.parseInt(tokens[i + j + 2]);
+                            coordinatesList.add(new Coordinates(x, y));
+                        } catch (NumberFormatException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+            }
+        }
+
+        return coordinatesList;
+    }
+
+    public void refreshGuiAfterSuccessfulMove(String message){
+
+        Platform.runLater(() -> {
+            Coordinates stoneToBeAdded = stonesToBeAddedFromStringToCoordinates(message);
+            List<Coordinates> stonesToBeRemoved = stonesToBeRemovedFromStringToCoordinates(message);
+            addStonesToBoard(stoneToBeAdded);
+            removeStonesFromBoard(stonesToBeRemoved);
+            updateStones();
+            switchPlayer();
+            updateInfo();
+        });
+
+
+    }
+
+    public void refreshGuiAfterPass(){
+        Platform.runLater(() -> {
+            switchPlayer();
+            updateInfo();
+        });
     }
 }

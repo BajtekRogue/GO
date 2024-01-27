@@ -1,10 +1,8 @@
 package GameObjects;
 
-import MyExceptions.OccupiedTileException;
-
 public class ArrayOfNeighbours {
     private final int arraySize;
-    private StoneNeighbours[][] arrayOfNeighbours;
+    private final StoneNeighbours[][] arrayOfNeighbours;
 
 
     public ArrayOfNeighbours(int arraySize){

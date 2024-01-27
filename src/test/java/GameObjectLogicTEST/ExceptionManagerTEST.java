@@ -47,7 +47,7 @@ public class ExceptionManagerTEST {
         assertEquals(new Coordinates(-1, -1), exceptionManager.getKO_coordinates());
     }
 
-    @Test(expected = SuicideException.class)
+    @Test
     public void testCheckForSuicide1() throws SuicideException, OccupiedTileException {
 
 
@@ -66,7 +66,7 @@ public class ExceptionManagerTEST {
 
 
         if (numberOfCapturedStones == 0)
-            exceptionManager.checkForSuicide(5, 5);
+            assertTrue(exceptionManager.checkForSuicide(5, 5));
 
 
     }
@@ -90,11 +90,11 @@ public class ExceptionManagerTEST {
 
 
         if (numberOfCapturedStones == 0)
-            exceptionManager.checkForSuicide(5, 8);
+            assertFalse(exceptionManager.checkForSuicide(5, 8));
 
     }
 
-    @Test(expected = SuicideException.class)
+    @Test
     public void testCheckForSuicide3() throws SuicideException, OccupiedTileException {
 
 
@@ -112,12 +112,12 @@ public class ExceptionManagerTEST {
 
 
         if (numberOfCapturedStones == 0)
-            exceptionManager.checkForSuicide(0, 0);
+            assertTrue(exceptionManager.checkForSuicide(0, 0));
 
 
     }
 
-    @Test(expected = SuicideException.class)
+    @Test
     public void testCheckForSuicide4() throws SuicideException, OccupiedTileException {
 
 
@@ -136,12 +136,12 @@ public class ExceptionManagerTEST {
 
 
         if (numberOfCapturedStones == 0)
-            exceptionManager.checkForSuicide(0, 5);
+            assertTrue(exceptionManager.checkForSuicide(0, 5));
 
 
     }
 
-    @Test(expected = KOException.class)
+    @Test
     public void testCheckForKO() throws KOException, OccupiedTileException {
 
         BoardManager.addStone(0, 1, new Stone(StoneColor.BLACK));
@@ -169,7 +169,7 @@ public class ExceptionManagerTEST {
         NeighbourManager.addNeighbours(1, 1);
         NeighbourManager.updateNeighbours(1, 1);
         List<Coordinates> capturedStones2 = CaptureManager.checkForCapture(1, 1);
-        ExceptionManager.checkForKO(1, 1);
+        assertTrue(ExceptionManager.checkForKO(1, 1));
         int numberOfCapturedStones2 = CaptureManager.removeCapturedStones(capturedStones);
         if (numberOfCapturedStones2 == 1)
             ExceptionManager.setKO_coordinates(capturedStones.get(0));

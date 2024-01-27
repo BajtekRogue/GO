@@ -23,7 +23,7 @@ public class Server {
     private static int nextPlayerId = 1;
     private static int wantsHuman = 0;
     private static boolean humanGame = false;
-    static GameMaster gameMaster;
+    private static GameMaster gameMaster;
 
     public static void main(String[] args) {
         startServer();
@@ -34,22 +34,20 @@ public class Server {
             serverSocket = new ServerSocket(PORT);
             System.out.println("Server is running. Waiting for players to connect...");
 
-            while (true) {
-                Socket clientSocket = serverSocket.accept();  // Wait for a new connection
+            while (!humanGame) {
+                Socket clientSocket = serverSocket.accept();
                 System.out.println("New player connected!");
 
-                // Assign the player an ID
                 int playerId = nextPlayerId++;
                 System.out.println("Assigned ID " + playerId + " to the player.");
 
-                // Create a Player object and add it to the list
                 Player newPlayer = new Player(playerId, clientSocket);
                 players.add(newPlayer);
 
                 if (!newPlayer.areInitialMessagesSent()) {
                     sendMessage(newPlayer.getOutputStream(), "You have successfully connected to the server as player" + playerId);
                     sendMessage(newPlayer.getOutputStream(), "PlayerID: " + playerId);
-                    newPlayer.setInitialMessagesSent();  // Mark initial messages as sent
+                    newPlayer.setInitialMessagesSent();
                 }
 
                 // Start a new thread to handle messages from the current player
@@ -73,11 +71,11 @@ public class Server {
                                 String output = gameMaster.makeAction(message);
                                 System.out.println(output);
                                 sendMessage(newPlayer.getOutputStream(),output);
+                                broadcastMessage(newPlayer, output);
                             }
                         }
 
                     } catch (IOException | ClassNotFoundException e) {
-                        // Handle exceptions (e.g., player disconnects)
                         System.out.println("Player " + playerId + " disconnected.");
                         players.remove(newPlayer);
                     } catch (SuicideException | KOException | OccupiedTileException e) {
@@ -85,6 +83,8 @@ public class Server {
                     }
                 }).start();
             }
+
+
         } catch (IOException e) {
             System.out.println("Error in the server: " + e.getMessage());
         }
@@ -123,20 +123,17 @@ public class Server {
     }
 
     private static void startHumanGame() throws IOException {
-        // Implement logic to start the game with human players
-        // You may need to create a Game instance or invoke appropriate methods
+
         System.out.println("Game with humans is starting...");
         humanGame = true;
+        serverSocket.close();
         gameMaster = new GameMaster(13);
+
         // Choose a random color for the players
         StoneColor firstPlayerColor = (new Random().nextBoolean()) ? StoneColor.BLACK : StoneColor.WHITE;
         StoneColor secondPlayerColor = (firstPlayerColor == StoneColor.BLACK) ? StoneColor.WHITE : StoneColor.BLACK;
-
-        // Assign  colors to player
         players.get(0).setStoneColor(firstPlayerColor);
         players.get(1).setStoneColor(secondPlayerColor);
-
-        // Inform the players about their colors
         sendMessage(players.get(0).getOutputStream(), firstPlayerColor.toString());
         sendMessage(players.get(1).getOutputStream(), secondPlayerColor.toString());
 

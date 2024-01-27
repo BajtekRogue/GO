@@ -12,7 +12,6 @@ import MyExceptions.KOException;
 import MyExceptions.OccupiedTileException;
 import MyExceptions.SuicideException;
 
-import java.io.IOException;
 import java.util.List;
 
 public class GameMaster {
@@ -22,73 +21,63 @@ public class GameMaster {
     private final CaptureManager captureManager;
     private boolean isGameOngoing;
     private StoneColor currentPlayer = StoneColor.BLACK;
-    private int BLACK_POINTS;
-    private int WHITE_POINTS;
+    private int blackPoints = 0;
+    private int whitePoints = 0;
+    private int consecutivePasses = 0;
 
 
-    public GameMaster(int boardSize){
+    public GameMaster(int boardSize) {
         this.board = new Board(boardSize);
         this.boardManager = new BoardManager(board);
         this.neighbourManager = new NeighbourManager(board);
         this.captureManager = new CaptureManager(board);
     }
 
-    public void handleGameBetweenTwoPlayers() throws IOException, ClassNotFoundException {
-
-        isGameOngoing = true;
-        String currentMove;
-
-//        while(isGameOngoing){
-//
-//            System.out.println("Player " + currentPlayer.toString() + " move");
-//            Server.sendMessage(currentPlayer, "Your move");
-//            currentMove = Server.receiveMessage(currentPlayer);
-//            boolean isMoveOK = isMoveValid(currentMove);
-//
-//            while(!isMoveOK) {
-//                Server.sendMessage(currentPlayer, "Your move was incorrect");
-//                currentMove = Server.receiveMessage(currentPlayer);
-//                isMoveOK = isMoveValid(currentMove);
-//            }
-//
-//            System.out.println("Player " + currentPlayer.toString() + " made a move: " + currentMove);
-//            switchPlayer();
-//        }
-    }
     public String makeAction(String message) throws SuicideException, KOException, OccupiedTileException {
         String[] parts = message.split(" ");
-        char messageType = parts[0].charAt(0);
+        String messageType = parts[0];
         int x;
         int y;
         switch (messageType) {
-            case 'M':
+            case "Move":
                 x = Integer.parseInt(parts[1]);
                 y = Integer.parseInt(parts[2]);
-                String result = handleMove(x,y);
-                String[] resultparts = message.split(" ");
-                switchPlayer();
-                System.out.println("Odpowiedź: (" + x + "," + y + ") " + result);
-                return (result); // Informacja o zajętym polu
+                String result = handleMove(x, y);
 
-            case 'P':
+                // if the move is valid switch players and rest passes strike
+                if (result.contains("OK")) {
+                    switchPlayer();
+                    consecutivePasses = 0;
+                }
+
+                System.out.println("Feedback: (" + x + "," + y + ") " + result);
+                return (result);
+
+            case "Pass":
                 switchPlayer();
-                System.out.println("Pass");
-                return "Pass";
-            case 'S':
-                // dodaj obsługę innych typów wiadomości
+                System.out.println("PASS");
+
+                consecutivePasses++;
+                // if 2 passes in a row end the game
+                if (consecutivePasses >= 2)
+                    endTheGame();
+
+                return "PASS";
+            case "Surrender":
+                endTheGame();
+                System.out.println("SURRENDER");
                 break;
             default:
-                System.out.println("Nieznany typ wiadomości: " + messageType);
+                System.out.println("Unknown message type: " + messageType);
                 break;
         }
-        return "Tego nie powinno być widać (GameMaster makeAction)";
+        return "It shouldn't be here (GameMaster makeAction)";
     }
 
-    private String handleMove(int x, int y){
-        if (!BoardManager.isTileFree(x, y)) {
-            return "OCCUPIED";
-        }
+    private String handleMove(int x, int y) {
 
+        if (!BoardManager.isTileFree(x, y))
+            return "OCCUPIED";
 
         // Stores the move
         StringBuilder result = new StringBuilder("OK MOVE ").append(x).append(" ").append(y);
@@ -107,18 +96,23 @@ public class GameMaster {
 
         // If stone placed finish the result (TEMPLATE: "OK MOVE" + placed stone + " REMOVED " + all removed stones
         if (numberOfCapturedStones > 0) {
-            switchPlayer();
             result.append(" REMOVED ");
             for (Coordinates capturedStone : capturedStones) {
                 result.append(capturedStone.getX()).append(" ").append(capturedStone.getY()).append(" ");
             }
 
             if (currentPlayer == StoneColor.BLACK) {
-                BLACK_POINTS += numberOfCapturedStones;
+                blackPoints += numberOfCapturedStones;
             } else {
-                WHITE_POINTS += numberOfCapturedStones;
+                whitePoints += numberOfCapturedStones;
             }
         }
+
+        // If 1 stone captured save it in order to check for KO later
+        if (numberOfCapturedStones == 1)
+            ExceptionManager.setKO_coordinates(capturedStones.get(0));
+        else
+            ExceptionManager.restKO_coordinates();
 
         // If nothing is captured check for suicide
         if (numberOfCapturedStones == 0 && ExceptionManager.checkForSuicide(x, y)) {
@@ -133,19 +127,11 @@ public class GameMaster {
         currentPlayer = (currentPlayer == StoneColor.WHITE) ? StoneColor.BLACK : StoneColor.WHITE;
     }
 
-    public boolean isMoveValid(String currentMove){
-
-        int x;
-        int y;
-        try{
-            x = Integer.parseInt(currentMove);
-        }catch (NumberFormatException e){
-            x = 0;
-        }
-
-        if(x > 0 && x < 7)
-            return true;
-        else
-            return false;
+    private void endTheGame() {
+        System.out.println("The game has ended!");
+        System.out.println("Black points: " + blackPoints);
+        System.out.println("White points: " + whitePoints);
+        //add
     }
+
 }
