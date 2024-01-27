@@ -3,7 +3,7 @@ package GameObjectLogicTEST;
 import GameObjects.*;
 import GameObjectsLogic.BoardManager;
 import GameObjectsLogic.NeighbourManager;
-import MyExceptions.OccupiedTileException;
+
 import org.junit.Before;
 import org.junit.Test;
 

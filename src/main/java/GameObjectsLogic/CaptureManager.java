@@ -4,11 +4,9 @@ import GameObjects.Board;
 import GameObjects.Coordinates;
 import GameObjects.NeighbourState;
 import GameObjects.StoneNeighbours;
-import java.util.HashSet;
-import MyExceptions.SuicideException;
-
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
 public class CaptureManager {
@@ -16,7 +14,7 @@ public class CaptureManager {
     private static Board board;
 
     public CaptureManager(Board board){
-        this.board = board;
+        CaptureManager.board = board;
     }
 
     public static int removeCapturedStones(List<Coordinates> stonesToBeRemoved){
@@ -59,8 +57,7 @@ public class CaptureManager {
         }
 
         HashSet<Coordinates> SetOfStonesToBeRemoved = new HashSet<>(stonesToBeCaptured);
-        List<Coordinates> stonesToBeCaptured2 = new ArrayList<>(SetOfStonesToBeRemoved);
-        return stonesToBeCaptured2;
+        return new ArrayList<>(SetOfStonesToBeRemoved);
     }
 
     public static List<Coordinates> lookForChain(int x, int y) {
@@ -109,8 +106,7 @@ public class CaptureManager {
         }
         if (currentNeighbours.getWest() == NeighbourState.ALLY) {
             stonesToBeCaptured.add(new Coordinates(x, y));
-            if (depthFirstSearch(x - 1, y, stonesToBeCaptured, visited))
-                return true;
+            return depthFirstSearch(x - 1, y, stonesToBeCaptured, visited);
         }
 
         // If this point is reached, the current stone is not part of the capturing chain

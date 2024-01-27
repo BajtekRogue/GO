@@ -1,8 +1,6 @@
 package GameObjectsLogic;
 
 import GameObjects.Coordinates;
-import MyExceptions.KOException;
-import MyExceptions.SuicideException;
 
 import java.util.List;
 

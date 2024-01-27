@@ -8,18 +8,11 @@ import GameObjectsLogic.BoardManager;
 import GameObjectsLogic.CaptureManager;
 import GameObjectsLogic.ExceptionManager;
 import GameObjectsLogic.NeighbourManager;
-import MyExceptions.KOException;
-import MyExceptions.OccupiedTileException;
-import MyExceptions.SuicideException;
+
 
 import java.util.List;
 
 public class GameMaster {
-    private final Board board;
-    private final BoardManager boardManager;
-    private final NeighbourManager neighbourManager;
-    private final CaptureManager captureManager;
-    private boolean isGameOngoing;
     private StoneColor currentPlayer = StoneColor.BLACK;
     private int blackPoints = 0;
     private int whitePoints = 0;
@@ -27,13 +20,13 @@ public class GameMaster {
 
 
     public GameMaster(int boardSize) {
-        this.board = new Board(boardSize);
-        this.boardManager = new BoardManager(board);
-        this.neighbourManager = new NeighbourManager(board);
-        this.captureManager = new CaptureManager(board);
+        Board board = new Board(boardSize);
+        BoardManager boardManager = new BoardManager(board);
+        NeighbourManager neighbourManager = new NeighbourManager(board);
+        CaptureManager captureManager = new CaptureManager(board);
     }
 
-    public String makeAction(String message) throws SuicideException, KOException, OccupiedTileException {
+    public String makeAction(String message){
         String[] parts = message.split(" ");
         String messageType = parts[0];
         int x;
@@ -60,13 +53,13 @@ public class GameMaster {
                 consecutivePasses++;
                 // if 2 passes in a row end the game
                 if (consecutivePasses >= 2)
-                    endTheGame();
+                    return "ENDGAME";
+
 
                 return "PASS";
             case "Surrender":
-                endTheGame();
                 System.out.println("SURRENDER");
-                break;
+                return "SURRENDER";
             default:
                 System.out.println("Unknown message type: " + messageType);
                 break;
@@ -127,7 +120,7 @@ public class GameMaster {
         currentPlayer = (currentPlayer == StoneColor.WHITE) ? StoneColor.BLACK : StoneColor.WHITE;
     }
 
-    private void endTheGame() {
+    public void endTheGame() {
         System.out.println("The game has ended!");
         System.out.println("Black points: " + blackPoints);
         System.out.println("White points: " + whitePoints);

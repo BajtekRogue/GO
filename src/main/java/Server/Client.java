@@ -17,11 +17,9 @@ public class Client extends Application {
     private final static int PORT = 1161;
     private static ObjectOutputStream outputStream;
     private static ObjectInputStream inputStream;
-    private static Socket socket;
     private boolean isPlayerReady = false;
     private boolean firstPlayer = false;
     private boolean myTurn = false;
-    private int playerID;
     private StoneColor playerColor;
     private GoGUI goGUI;
     public Client() {
@@ -32,7 +30,7 @@ public class Client extends Application {
     }
 
     public void switchTurn(){
-        myTurn = (myTurn) ? false : true;
+        myTurn = !myTurn;
     }
     public StoneColor getPlayerColor(){
         return playerColor;
@@ -41,17 +39,9 @@ public class Client extends Application {
         return isPlayerReady;
     }
 
-    public int getPlayerID() {
-        return playerID;
-    }
-
-    public void setPlayerID(int playerID) {
-        this.playerID = playerID;
-    }
-
     public void run() {
         try {
-            socket = new Socket("localhost", PORT);
+            Socket socket = new Socket("localhost", PORT);
             outputStream = new ObjectOutputStream(socket.getOutputStream());
             inputStream = new ObjectInputStream(socket.getInputStream());
             String message1 = receiveMessage();
@@ -60,7 +50,7 @@ public class Client extends Application {
 
             if (message1.startsWith("You have successfully connected to the server as player")) {
                 // Extract player ID from the notification
-                playerID = Integer.parseInt(message1.replaceAll("[^0-9]", ""));
+                int playerID = Integer.parseInt(message1.replaceAll("[^0-9]", ""));
                 System.out.println("Player ID: " + playerID);
                 System.out.println("Waiting for other players to join...");
 
@@ -76,61 +66,8 @@ public class Client extends Application {
                     guiLatch.countDown();
                 });
 
-
-
                 // Start a new thread to handle messages from the server
-                new Thread(() -> {
-                    try {
-                        while (true) {
-                            String message = receiveMessage();
-                            System.out.println("Received message: " + message);
-
-                            // react accordingly to differently messages
-                            if (message.equals("GameAccepted")) {
-                                isPlayerReady = true;
-                                System.out.println("The other player also wants to play!");
-                                playAgainstHuman();
-                            }
-                            else if(message.equals("BLACK")){
-                                playerColor = StoneColor.BLACK;
-                                myTurn = true;
-                                System.out.println("You are playing " + message);
-                            }
-                            else if(message.equals("WHITE")){
-                                playerColor = StoneColor.WHITE;
-                                myTurn = false;
-                                System.out.println("You are playing " + message);
-                            }
-                            else if(message.contains("KO")){
-                                goGUI.showAlert("Cannot commit KO");
-                            }
-                            else if(message.contains("OK")){
-                                switchTurn();
-                                goGUI.refreshGuiAfterSuccessfulMove(message);
-                            }
-                            else if(message.contains("SUICIDE")){
-                                goGUI.showAlert("Cannot commit suicide");
-                            }
-                            else if(message.contains("OCCUPIED")){
-                                goGUI.showAlert("This tile is already occupied");
-                            }
-                            else if(message.contains("PASS")){
-                                switchTurn();
-                                goGUI.refreshGuiAfterPass();
-                            }
-                            else if(message.contains("SURRENDER")){
-                                //add
-                            }
-
-
-                        }
-
-                    } catch (IOException | ClassNotFoundException e) {
-                        System.out.println("Error while receiving messages: " + e.getMessage());
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
-                    }
-                }).start();
+                new Thread(this::handleMessagesFromTheServer).start();
             }
         } catch (IOException e) {
             System.out.println("Connection error has occurred");
@@ -140,9 +77,64 @@ public class Client extends Application {
         }
     }
 
+    private void handleMessagesFromTheServer(){
+        try {
+            while (true) {
+                String message = receiveMessage();
+                System.out.println("Received message: " + message);
+
+                // react accordingly to differently messages
+                if (message.equals("GameAccepted")) {
+                    isPlayerReady = true;
+                    System.out.println("The other player also wants to play!");
+                }
+                else if(message.equals("BLACK")){
+                    playerColor = StoneColor.BLACK;
+                    myTurn = true;
+                    System.out.println("You are playing " + message);
+                    goGUI.toggleActivatePassButton();
+                    goGUI.toggleFFPassButton();
+                    goGUI.setGUITitle(playerColor);
+                }
+                else if(message.equals("WHITE")){
+                    playerColor = StoneColor.WHITE;
+                    myTurn = false;
+                    System.out.println("You are playing " + message);
+                    goGUI.setGUITitle(playerColor);
+                }
+                else if(message.contains("KO")){
+                    goGUI.showAlert("Cannot commit KO");
+                }
+                else if(message.contains("OK")){
+                    switchTurn();
+                    goGUI.refreshGUIAfterSuccessfulMove(message);
+                }
+                else if(message.contains("SUICIDE")){
+                    goGUI.showAlert("Cannot commit suicide");
+                }
+                else if(message.contains("OCCUPIED")){
+                    goGUI.showAlert("This tile is already occupied");
+                }
+                else if(message.contains("PASS")){
+                    switchTurn();
+                    goGUI.refreshGUIAfterPass();
+                }
+                else if(message.contains("SURRENDER")){
+                    goGUI.showWinnerDialog(playerColor);
+                }
+                else if(message.contains("ENDGAME")){
+                    goGUI.endGame();
+                }
+
+
+            }
+
+        } catch (IOException | ClassNotFoundException e) {
+            System.out.println("Error while receiving messages: " + e.getMessage());
+        }
+    }
     public String receiveMessage() throws IOException, ClassNotFoundException {
-        String notification = (String) inputStream.readObject();
-        return notification;
+        return (String) inputStream.readObject();
     }
 
     private void sendMessage(String message) throws IOException {
@@ -172,12 +164,8 @@ public class Client extends Application {
         }
     }
 
-    public void playAgainstHuman() throws InterruptedException, IOException, ClassNotFoundException {
-        // Your game logic here
-    }
-
     @Override
-    public void start(Stage stage) throws Exception {
-        // Implement if needed
+    public void start(Stage stage){
+
     }
 }

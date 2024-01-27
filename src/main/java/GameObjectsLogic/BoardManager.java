@@ -2,14 +2,12 @@ package GameObjectsLogic;
 
 import GameObjects.Board;
 import GameObjects.Stone;
-import GameObjects.StoneColor;
-import MyExceptions.OccupiedTileException;
 
 public class BoardManager {
 
     private static Board board;
     public BoardManager(Board board){
-        this.board = board;
+        BoardManager.board = board;
     }
     public Board getBoard() {
         return board;
@@ -19,11 +17,7 @@ public class BoardManager {
         return board.getTile(x, y);
     }
 
-    public static void addStone(int x, int y, Stone stone) throws ArrayIndexOutOfBoundsException
-           /*OccupiedTileException*/ {
-
-//        if(!isTileFree(x, y))
-//            throw new OccupiedTileException("Tile (" + x + "," + y  + ") is already occupied");
+    public static void addStone(int x, int y, Stone stone) throws ArrayIndexOutOfBoundsException {
         board.setTile(x, y, stone);
     }
 
@@ -33,10 +27,7 @@ public class BoardManager {
 
     public static boolean isTileFree(int x, int y) throws ArrayIndexOutOfBoundsException{
         Stone stone = board.getTile(x, y);
-        if(stone == null)
-            return true;
-        else
-            return false;
+        return stone == null;
     }
 
     public static void resetBoard() {

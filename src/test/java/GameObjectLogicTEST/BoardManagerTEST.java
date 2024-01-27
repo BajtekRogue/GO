@@ -1,11 +1,9 @@
 package GameObjectLogicTEST;
 
 import GameObjects.Board;
-
 import GameObjects.Stone;
 import GameObjects.StoneColor;
 import GameObjectsLogic.BoardManager;
-import MyExceptions.OccupiedTileException;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -34,33 +32,33 @@ public class BoardManagerTEST {
 
 
         try {
-            boardManager.addStone(1, 1, stone);
+            BoardManager.addStone(1, 1, stone);
         } catch (ArrayIndexOutOfBoundsException e) {
             fail("Unexpected exception: " + e.getMessage());
         }
 
-        assertEquals(stone, boardManager.getStone(1, 1));
+        assertEquals(stone, BoardManager.getStone(1, 1));
 
         try {
-            boardManager.removeStone(1, 1);
+            BoardManager.removeStone(1, 1);
         } catch (ArrayIndexOutOfBoundsException e) {
             fail("Unexpected exception: " + e.getMessage());
         }
 
-        assertNull(boardManager.getStone(1, 1));
+        assertNull(BoardManager.getStone(1, 1));
     }
 
     @Test
     public void testIsTileFree() {
-        assertTrue(boardManager.isTileFree(0, 0));
+        assertTrue(BoardManager.isTileFree(0, 0));
 
         try {
-            boardManager.addStone(0, 0, new Stone(StoneColor.WHITE));
+            BoardManager.addStone(0, 0, new Stone(StoneColor.WHITE));
         } catch (ArrayIndexOutOfBoundsException e) {
             fail("Unexpected exception: " + e.getMessage());
         }
 
-        assertFalse(boardManager.isTileFree(0, 0));
+        assertFalse(BoardManager.isTileFree(0, 0));
     }
 
     @Test
@@ -68,16 +66,16 @@ public class BoardManagerTEST {
         Stone stone = new Stone(StoneColor.WHITE);
 
         try {
-            boardManager.addStone(1, 1, stone);
+            BoardManager.addStone(1, 1, stone);
         } catch (ArrayIndexOutOfBoundsException e) {
             fail("Unexpected exception: " + e.getMessage());
         }
 
-        boardManager.resetBoard();
+        BoardManager.resetBoard();
 
         for (int i = 0; i < BOARD_SIZE; i++) {
             for (int j = 0; j < BOARD_SIZE; j++) {
-                assertNull(boardManager.getStone(i, j));
+                assertNull(BoardManager.getStone(i, j));
             }
         }
     }

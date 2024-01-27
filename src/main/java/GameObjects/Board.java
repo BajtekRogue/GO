@@ -2,7 +2,7 @@ package GameObjects;
 
 public class Board {
     private final int BOARD_SIZE;
-    private Stone[][] board;
+    private final Stone[][] board;
 
 
     public Board(int boardSize){

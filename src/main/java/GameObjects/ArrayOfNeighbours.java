@@ -10,10 +10,6 @@ public class ArrayOfNeighbours {
         arrayOfNeighbours = new StoneNeighbours[arraySize][arraySize];
     }
 
-    public StoneNeighbours[][] getArrayOfNeighbours() {
-        return arrayOfNeighbours;
-    }
-
     public int getArraySize() {
         return arraySize;
     }

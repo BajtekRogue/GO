@@ -7,32 +7,37 @@ import GameObjects.StoneColor;
 import GameObjectsLogic.BoardManager;
 import GameObjectsLogic.CaptureManager;
 import GameObjectsLogic.NeighbourManager;
-import MyExceptions.OccupiedTileException;
+
 import org.junit.Before;
 import org.junit.Test;
 
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 public class CaptureManagerTEST {
 
     private static final int BOARD_SIZE = 10;
-    private static Board board;
+    private static BoardManager boardManager;
+    private static NeighbourManager neighbourManager;
+    private static CaptureManager captureManager;
 
     @Before
     public void setUp() {
-        board = new Board(BOARD_SIZE);
-        BoardManager boardManager = new BoardManager(board);
-        NeighbourManager neighbourManager = new NeighbourManager(board);
-        CaptureManager captureManager = new CaptureManager(board);
+        Board board = new Board(BOARD_SIZE);
+        boardManager = new BoardManager(board);
+        neighbourManager = new NeighbourManager(board);
+        captureManager = new CaptureManager(board);
     }
 
 
 
     @Test
-    public void testCheckForCapture1() throws OccupiedTileException {
+    public void testCheckForCapture1(){
+
+        assertNotNull(boardManager);
+        assertNotNull(neighbourManager);
+        assertNotNull(captureManager);
 
         BoardManager.addStone(2, 1, new Stone(StoneColor.WHITE));
         BoardManager.addStone(2, 2, new Stone(StoneColor.WHITE));
@@ -59,7 +64,11 @@ public class CaptureManagerTEST {
 
 
     @Test
-    public void testCheckForCapture2() throws OccupiedTileException {
+    public void testCheckForCapture2(){
+
+        assertNotNull(boardManager);
+        assertNotNull(neighbourManager);
+        assertNotNull(captureManager);
 
         BoardManager.addStone(0, 9, new Stone(StoneColor.WHITE));
         BoardManager.addStone(1, 8, new Stone(StoneColor.WHITE));
@@ -86,7 +95,7 @@ public class CaptureManagerTEST {
     }
 
     @Test
-    public void testCheckForCapture3() throws OccupiedTileException {
+    public void testCheckForCapture3(){
 
 
 

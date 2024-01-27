@@ -8,6 +8,9 @@ import GameObjectsLogic.BoardManager;
 import Server.Client;
 import javafx.application.Application;
 import javafx.application.Platform;
+import javafx.beans.binding.Bindings;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
@@ -42,6 +45,9 @@ public class GoGUI extends Application {
     private Button[][] buttons;
     private Client client;
     private Board board;
+    private BooleanProperty activatePassButton = new SimpleBooleanProperty(false);
+    private BooleanProperty activateFFButton = new SimpleBooleanProperty(false);
+    private Stage primaryStage;
 
     public GoGUI(Client client) {
         this.board = new Board(BOARD_SIZE);
@@ -52,6 +58,7 @@ public class GoGUI extends Application {
     @Override
     public void start(Stage primaryStage) throws IOException{
 
+        this.primaryStage = primaryStage;
         primaryStage.setTitle("Go Game");
         primaryStage.setResizable(false);
         Pane root = new Pane();
@@ -103,6 +110,7 @@ public class GoGUI extends Application {
                 throw new RuntimeException(ex);
             }
         });
+        passButton.disableProperty().bind(Bindings.not(activatePassButton));
 
         // FF Button
         Button surrenderButton = new Button("Forfeit");
@@ -115,6 +123,7 @@ public class GoGUI extends Application {
                 throw new RuntimeException(ex);
             }
         });
+        surrenderButton.disableProperty().bind(Bindings.not(activateFFButton));
 
         infoPane.getChildren().addAll(turnLabel, pointsLabel, passButton, surrenderButton);
         root.getChildren().addAll(separatorLine, infoPane);
@@ -156,6 +165,14 @@ public class GoGUI extends Application {
 //                primaryStage.setTitle("Go Game: Player Black");
     }
 
+    public void toggleActivatePassButton(){
+        activatePassButton.set(!activatePassButton.get());
+    }
+
+    public void toggleFFPassButton(){
+        activateFFButton.set(!activateFFButton.get());
+    }
+
     private boolean askForBot() {
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION,
                 "Do you want to play with a bot?",
@@ -163,7 +180,7 @@ public class GoGUI extends Application {
         alert.initStyle(StageStyle.UTILITY);
         alert.setHeaderText(null);
         alert.setTitle("Game with bot?");
-
+        alert.initOwner(primaryStage);
         alert.showAndWait();
 
         return alert.getResult() == ButtonType.YES;
@@ -176,18 +193,15 @@ public class GoGUI extends Application {
         alert.initStyle(StageStyle.UTILITY);
         alert.setHeaderText(null);
         alert.setTitle("Game with human?");
-
+        alert.initOwner(primaryStage);
         alert.showAndWait();
 
         return alert.getResult() == ButtonType.YES;
     }
 
     private void updateInfo() {
-        // Update player turn label
         turnLabel.setText("Player Turn: " + currentPlayer.toString());
         turnLabel.setTextFill((currentPlayer == StoneColor.BLACK) ? Color.BLACK : Color.WHITE);
-
-        // Update points label
         pointsLabel.setText("Black Points: " + blackPoints + "   White Points: " + whitePoints);
     }
 
@@ -244,35 +258,46 @@ public class GoGUI extends Application {
             client.sendPass();
     }
 
-    private void showWinnerDialog(StoneColor winner) {
-        String message =  winner.toString() + " won the game!";
-        Alert alert = new Alert(Alert.AlertType.INFORMATION, message, ButtonType.OK);
-        alert.showAndWait();
+    public void showWinnerDialog(StoneColor winner) {
+        Platform.runLater(() -> {
+            String message =  winner.toString() + " won the game! Black had " + blackPoints + " points and White had " + whitePoints + " points";
+            Alert alert = new Alert(Alert.AlertType.INFORMATION, message, ButtonType.OK);
+            alert.initOwner(primaryStage);
+            alert.setOnCloseRequest(event -> closeGUI());
+            alert.showAndWait();
 
-        // After showing the result we ask the player for next game
-        if (askForNewGame()) {
-            // Yes - we reset the game
-            resetGame();
-        } else {
-            // No - we close the app
-            System.exit(0);
-        }
+//        // After showing the result we ask the player for next game
+//        if (askForNewGame()) {
+//            // Yes - we reset the game
+//            resetGame();
+//        } else {
+//            // No - we close the app
+//            System.exit(0);
+//        }
+        });
+
+
     }
     private void showDrawDialog() {
-        String message =  "Draw!";
-        Alert alert = new Alert(Alert.AlertType.INFORMATION, message, ButtonType.OK);
-        alert.showAndWait();
 
-        // After showing the result we ask the player for next game
-        if (askForNewGame()) {
-            // Yes - we reset the game
-            resetGame();
-        } else {
-            // No - we close the app
-            System.exit(0);
-        }
+        Platform.runLater(() -> {
+            String message =  "Draw! Both players had " + blackPoints + " points";
+            Alert alert = new Alert(Alert.AlertType.INFORMATION, message, ButtonType.OK);
+            alert.initOwner(primaryStage);
+            alert.setOnCloseRequest(event -> closeGUI());
+            alert.showAndWait();
+            //        // After showing the result we ask the player for next game
+//        if (askForNewGame()) {
+//            // Yes - we reset the game
+//            resetGame();
+//        } else {
+//            // No - we close the app
+//            System.exit(0);
+//        }
+        });
+
     }
-    private void endGame() {
+    public void endGame() {
         if(blackPoints > whitePoints) {
             showWinnerDialog(StoneColor.BLACK);
         } else if (whitePoints > blackPoints) {
@@ -284,6 +309,7 @@ public class GoGUI extends Application {
 
     private boolean askForNewGame() {
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "Play again?", ButtonType.YES, ButtonType.NO);
+        alert.initOwner(primaryStage);
         alert.showAndWait();
         return alert.getResult() == ButtonType.YES;
     }
@@ -371,12 +397,15 @@ public class GoGUI extends Application {
 
     public void switchPlayer() {
         currentPlayer = (currentPlayer == StoneColor.WHITE) ? StoneColor.BLACK : StoneColor.WHITE;
+        toggleActivatePassButton();
+        toggleFFPassButton();
     }
 
     public void showAlert(String message) {
         if(currentPlayer == client.getPlayerColor()){
             Platform.runLater(() -> {
                 Alert alert = new Alert(Alert.AlertType.ERROR, message, ButtonType.OK);
+                alert.initOwner(primaryStage);
                 alert.showAndWait();
             });
         }
@@ -448,7 +477,7 @@ public class GoGUI extends Application {
         return coordinatesList;
     }
 
-    public void refreshGuiAfterSuccessfulMove(String message){
+    public void refreshGUIAfterSuccessfulMove(String message){
 
         Platform.runLater(() -> {
             Coordinates stoneToBeAdded = stonesToBeAddedFromStringToCoordinates(message);
@@ -463,10 +492,20 @@ public class GoGUI extends Application {
 
     }
 
-    public void refreshGuiAfterPass(){
+    public void refreshGUIAfterPass(){
         Platform.runLater(() -> {
             switchPlayer();
             updateInfo();
+        });
+    }
+
+    private void closeGUI() {
+        Platform.runLater(() -> primaryStage.close());
+    }
+
+    public void setGUITitle(StoneColor stoneColor){
+        Platform.runLater(() -> {
+            this.primaryStage.setTitle("PLAYER " + stoneColor.toString());
         });
     }
 }

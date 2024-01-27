@@ -5,9 +5,7 @@ import GameObjectsLogic.CaptureManager;
 import GameObjectsLogic.BoardManager;
 import GameObjectsLogic.ExceptionManager;
 import GameObjectsLogic.NeighbourManager;
-import MyExceptions.KOException;
-import MyExceptions.OccupiedTileException;
-import MyExceptions.SuicideException;
+
 import org.junit.Before;
 import org.junit.Test;
 import java.util.List;
@@ -17,13 +15,11 @@ import static org.junit.Assert.*;
 public class ExceptionManagerTEST {
 
     private static final int BOARD_SIZE = 10;
-    private static Board board;
-    private static ExceptionManager exceptionManager;
 
     @Before
     public void setUp() {
-        board = new Board(BOARD_SIZE);
-        exceptionManager = new ExceptionManager();
+        Board board = new Board(BOARD_SIZE);
+        ExceptionManager exceptionManager = new ExceptionManager();
         BoardManager boardManager = new BoardManager(board);
         NeighbourManager neighbourManager = new NeighbourManager(board);
         CaptureManager captureManager = new CaptureManager(board);
@@ -32,23 +28,23 @@ public class ExceptionManagerTEST {
     @Test
     public void testSetAndGetKO_coordinates() {
         Coordinates koCoordinates = new Coordinates(1, 1);
-        exceptionManager.setKO_coordinates(koCoordinates);
+        ExceptionManager.setKO_coordinates(koCoordinates);
 
-        assertEquals(koCoordinates, exceptionManager.getKO_coordinates());
+        assertEquals(koCoordinates, ExceptionManager.getKO_coordinates());
     }
 
     @Test
     public void testRestKO_coordinates() {
         Coordinates koCoordinates = new Coordinates(1, 1);
-        exceptionManager.setKO_coordinates(koCoordinates);
+        ExceptionManager.setKO_coordinates(koCoordinates);
 
-        exceptionManager.restKO_coordinates();
+        ExceptionManager.restKO_coordinates();
 
-        assertEquals(new Coordinates(-1, -1), exceptionManager.getKO_coordinates());
+        assertEquals(new Coordinates(-1, -1), ExceptionManager.getKO_coordinates());
     }
 
     @Test
-    public void testCheckForSuicide1() throws SuicideException, OccupiedTileException {
+    public void testCheckForSuicide1(){
 
 
         BoardManager.addStone(5, 4, new Stone(StoneColor.WHITE));
@@ -66,13 +62,13 @@ public class ExceptionManagerTEST {
 
 
         if (numberOfCapturedStones == 0)
-            assertTrue(exceptionManager.checkForSuicide(5, 5));
+            assertTrue(ExceptionManager.checkForSuicide(5, 5));
 
 
     }
 
     @Test
-    public void testCheckForSuicide2() throws SuicideException, OccupiedTileException {
+    public void testCheckForSuicide2(){
 
 
         BoardManager.addStone(5, 4, new Stone(StoneColor.WHITE));
@@ -90,12 +86,12 @@ public class ExceptionManagerTEST {
 
 
         if (numberOfCapturedStones == 0)
-            assertFalse(exceptionManager.checkForSuicide(5, 8));
+            assertFalse(ExceptionManager.checkForSuicide(5, 8));
 
     }
 
     @Test
-    public void testCheckForSuicide3() throws SuicideException, OccupiedTileException {
+    public void testCheckForSuicide3(){
 
 
         BoardManager.addStone(0, 1, new Stone(StoneColor.WHITE));
@@ -112,13 +108,13 @@ public class ExceptionManagerTEST {
 
 
         if (numberOfCapturedStones == 0)
-            assertTrue(exceptionManager.checkForSuicide(0, 0));
+            assertTrue(ExceptionManager.checkForSuicide(0, 0));
 
 
     }
 
     @Test
-    public void testCheckForSuicide4() throws SuicideException, OccupiedTileException {
+    public void testCheckForSuicide4(){
 
 
         BoardManager.addStone(0, 4, new Stone(StoneColor.WHITE));
@@ -136,13 +132,13 @@ public class ExceptionManagerTEST {
 
 
         if (numberOfCapturedStones == 0)
-            assertTrue(exceptionManager.checkForSuicide(0, 5));
+            assertTrue(ExceptionManager.checkForSuicide(0, 5));
 
 
     }
 
     @Test
-    public void testCheckForKO() throws KOException, OccupiedTileException {
+    public void testCheckForKO(){
 
         BoardManager.addStone(0, 1, new Stone(StoneColor.BLACK));
         BoardManager.addStone(1, 0, new Stone(StoneColor.BLACK));
@@ -168,7 +164,6 @@ public class ExceptionManagerTEST {
         BoardManager.addStone(1, 1, new Stone(StoneColor.WHITE));
         NeighbourManager.addNeighbours(1, 1);
         NeighbourManager.updateNeighbours(1, 1);
-        List<Coordinates> capturedStones2 = CaptureManager.checkForCapture(1, 1);
         assertTrue(ExceptionManager.checkForKO(1, 1));
         int numberOfCapturedStones2 = CaptureManager.removeCapturedStones(capturedStones);
         if (numberOfCapturedStones2 == 1)

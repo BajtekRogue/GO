@@ -8,9 +8,9 @@ import java.io.ObjectOutputStream;
 import java.net.Socket;
 
 class Player {
-    private int playerID;
-    private ObjectOutputStream outputStream;
-    private ObjectInputStream inputStream;
+    private final int playerID;
+    private final ObjectOutputStream outputStream;
+    private final ObjectInputStream inputStream;
     private boolean initialMessagesSent = false;
     private StoneColor stoneColor;
 
@@ -37,10 +37,6 @@ class Player {
 
     public void setInitialMessagesSent() {
         this.initialMessagesSent = true;
-    }
-
-    public StoneColor getStoneColor() {
-        return stoneColor;
     }
 
     public void setStoneColor(StoneColor stoneColor) {

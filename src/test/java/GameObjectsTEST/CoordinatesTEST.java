@@ -3,9 +3,7 @@ package GameObjectsTEST;
 import GameObjects.Coordinates;
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 public class CoordinatesTEST {
 
@@ -27,11 +25,11 @@ public class CoordinatesTEST {
         Coordinates coordinates2 = new Coordinates(1, 2);
         Coordinates coordinates3 = new Coordinates(3, 4);
 
-        assertTrue(coordinates1.equals(coordinates2));
-        assertTrue(coordinates2.equals(coordinates1));
+        assertEquals(coordinates1, coordinates2);
+        assertEquals(coordinates2, coordinates1);
 
-        assertFalse(coordinates1.equals(coordinates3));
-        assertFalse(coordinates3.equals(coordinates1));
+        assertNotEquals(coordinates1, coordinates3);
+        assertNotEquals(coordinates3, coordinates1);
     }
 
     @Test
@@ -41,7 +39,7 @@ public class CoordinatesTEST {
         Coordinates coordinates3 = new Coordinates(3, 4);
 
         assertEquals(coordinates1.hashCode(), coordinates2.hashCode());
-        assertFalse(coordinates1.hashCode() == coordinates3.hashCode());
+        assertNotEquals(coordinates1.hashCode(), coordinates3.hashCode());
     }
 }
 

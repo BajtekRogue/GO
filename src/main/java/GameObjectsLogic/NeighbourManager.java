@@ -8,8 +8,8 @@ public class NeighbourManager {
     private static ArrayOfNeighbours arrayOfNeighbours;
 
     public NeighbourManager(Board board){
-        this.board = board;
-        this.arrayOfNeighbours = new ArrayOfNeighbours(board.getBOARD_SIZE());
+        NeighbourManager.board = board;
+        arrayOfNeighbours = new ArrayOfNeighbours(board.getBOARD_SIZE());
     }
 
     public static ArrayOfNeighbours getArrayOfNeighbours() {
@@ -82,16 +82,16 @@ public class NeighbourManager {
     public static void updateNeighbours(int x, int y){
         try{
             addNeighbours(x, y + 1);
-        }catch (ArrayIndexOutOfBoundsException e){}
+        }catch (ArrayIndexOutOfBoundsException ignored){}
         try{
             addNeighbours(x + 1, y);
-        }catch (ArrayIndexOutOfBoundsException e){}
+        }catch (ArrayIndexOutOfBoundsException ignored){}
         try{
             addNeighbours(x, y - 1);
-        }catch (ArrayIndexOutOfBoundsException e){}
+        }catch (ArrayIndexOutOfBoundsException ignored){}
         try{
             addNeighbours(x - 1, y);
-        }catch (ArrayIndexOutOfBoundsException e){}
+        }catch (ArrayIndexOutOfBoundsException ignored){}
 
     }
 

@@ -1,21 +1,18 @@
 package GUI;
 
-import GameObjects.Board;
 import GameObjects.Coordinates;
-import GameObjectsLogic.BoardManager;
-import GameObjectsLogic.CaptureManager;
-import GameObjectsLogic.NeighbourManager;
 import org.junit.Before;
 import org.junit.Test;
-import java.util.ArrayList;
+
 import java.util.List;
+
 import static org.junit.Assert.assertEquals;
 public class GoGUITEST {
 
     private static GoGUI goGUI;
     @Before
     public void setUp() {
-        this.goGUI = new GoGUI(null);
+        goGUI = new GoGUI(null);
     }
     @Test
     public void testStonesToBeAddedFromStringToCoordinates1(){

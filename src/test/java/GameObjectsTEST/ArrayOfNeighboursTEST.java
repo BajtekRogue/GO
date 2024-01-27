@@ -3,13 +3,11 @@ package GameObjectsTEST;
 import GameObjects.ArrayOfNeighbours;
 import GameObjects.NeighbourState;
 import GameObjects.StoneNeighbours;
-import MyExceptions.OccupiedTileException;
 import org.junit.Before;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.fail;
 
 public class ArrayOfNeighboursTEST {
 
