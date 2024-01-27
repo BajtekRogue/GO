@@ -1,6 +1,5 @@
 package Server;
 
-import GUI.GameModeSelectionGUI;
 import GUI.GoGUI;
 import javafx.application.Application;
 import javafx.application.Platform;
@@ -10,22 +9,32 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
-import java.util.Scanner;
 import java.util.concurrent.CountDownLatch;
 
-public class Client extends Application{
+public class Client extends Application {
 
     private final static int PORT = 1161;
     private static ObjectOutputStream outputStream;
     private static ObjectInputStream inputStream;
     private static Socket socket;
     private boolean isPlayerReady = false;
+    private boolean firstPlayer = false;
+    private int playerID; // Player ID received from the server
+    private String playerColor;
 
-    public Client(){
-
+    public Client() {
     }
-    public boolean isPlayerReady(){
+
+    public boolean isPlayerReady() {
         return isPlayerReady;
+    }
+
+    public int getPlayerID() {
+        return playerID;
+    }
+
+    public void setPlayerID(int playerID) {
+        this.playerID = playerID;
     }
 
     public void run() {
@@ -33,139 +42,104 @@ public class Client extends Application{
             socket = new Socket("localhost", PORT);
             outputStream = new ObjectOutputStream(socket.getOutputStream());
             inputStream = new ObjectInputStream(socket.getInputStream());
-            String notification1 = receiveMessage();
-            GameModeSelectionGUI gameModeSelectionGUI = new GameModeSelectionGUI();
-            System.out.println(notification1);
+            String message1 = receiveMessage();
+            GoGUI goGUI = new GoGUI(this);
+            System.out.println(message1);
 
-            if (notification1.equals("You have successfully connected to the server as player1")) {
+            if (message1.startsWith("You have successfully connected to the server as player")) {
+                // Extract player ID from the notification
+                playerID = Integer.parseInt(message1.replaceAll("[^0-9]", ""));
+                System.out.println("Player ID: " + playerID);
+                System.out.println("Waiting for other players to join...");
+
                 CountDownLatch guiLatch = new CountDownLatch(1);
+                firstPlayer = playerID == 1;
 
                 Platform.runLater(() -> {
-                    gameModeSelectionGUI.start(new Stage());
+                    try {
+                        goGUI.start(new Stage());
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
                     guiLatch.countDown();  // This counts down the latch
                 });
 
-                // Wait for the GUI to be shown on the JavaFX application thread
-                guiLatch.await();
-                while (gameModeSelectionGUI.isWindowOpen()) {
-                    Thread.sleep(1000);  // Adjust the sleep time as needed
-                }
 
-                String gameMode = gameModeSelectionGUI.getSelectedGameMode();
-                System.out.println("Selected game mode: " + gameMode);
-                sendMessage(gameMode);
 
-                if(gameMode.equals("Human")){
-                    System.out.println("Waiting for player2 to join...");
-                    String notification2 = receiveMessage();
-                    System.out.println(notification2);
-                    if(notification2.equals("Player2 has successfully connected")){
-                        isPlayerReady = true;
-                        playAgainstHuman();
+                // Dodaj pętlę do odbierania wiadomości i wypisywania ich
+                new Thread(() -> {
+                    try {
+                        while (true) {
+                            String message = receiveMessage();
+                            System.out.println("Received message: " + message);
+                            // Możesz dodać odpowiednie akcje związane z otrzymaniem wiadomości
+                            if (message.equals("GameAccepted")) {
+                                isPlayerReady = true;
+                                System.out.println("The other player also wants to play!");
+                                playAgainstHuman();
+                            }
+                            if(message.equals("BLACK")){
+                                playerColor = message;
+                                System.out.println("You are playing " + message);
+                            }
+                            if(message.equals("WHITE")){
+                                playerColor = message;
+                                System.out.println("You are playing " + message);
+                            }
+                        }
+
+                    } catch (IOException | ClassNotFoundException e) {
+                        System.out.println("Error while receiving messages: " + e.getMessage());
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
                     }
-                }else{
-                    playAgainstBot();
-                }
+                }).start();
             }
-            else if (notification1.equals("You have successfully connected to the server as player2")) {
-                isPlayerReady = true;
-                playAgainstHuman();
-            }
-
-
-
-
-
-
-
-        }catch(IOException e) {
+        } catch (IOException e) {
             System.out.println("Connection error has occurred");
-        }catch(ClassNotFoundException e){
+        } catch (ClassNotFoundException e) {
             System.out.println("Class not found exception");
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            System.out.println("Interrupted while waiting for user selection");
         }
     }
-
-
-
 
     public String receiveMessage() throws IOException, ClassNotFoundException {
         String notification = (String) inputStream.readObject();
         return notification;
     }
 
-    public void sendMessage(String message) throws IOException {
+    private void sendMessage(String message) throws IOException {
         outputStream.writeObject(message);
+
+    }
+    public void sendMove(int x, int y) throws IOException {
+        sendMessage("M " + x + " " + y);
+    }
+    public void sendSurrender() throws IOException {
+        sendMessage("S");
+    }
+    public void sendPass() throws IOException {
+        sendMessage("P");
+    }
+    public void sendGameWithHuman() throws IOException {
+        sendMessage("Human");
+    }
+    public void sendGameWithBot() throws IOException {
+        sendMessage("Bot");
     }
 
     public void playAgainstBot() throws InterruptedException {
-        while(true){
+        while (true) {
             Thread.sleep(1000);
             System.out.println("Bot");
         }
-        //add
     }
 
     public void playAgainstHuman() throws InterruptedException, IOException, ClassNotFoundException {
-
-
-        Scanner scanner = new Scanner(System.in);
-        String message = receiveMessage();
-        System.out.println(message);
-        boolean isGameOngoing = true;
-        String currentMove = "";
-
-
-        CountDownLatch guiLatch = new CountDownLatch(1);
-
-        // Launch the first JavaFX application in a separate thread
-        new Thread(() -> {
-            Platform.runLater(() -> {
-                GoGUI goGUI = new GoGUI(this);
-                try {
-                    goGUI.start(new Stage());
-                } catch (Exception e) {
-                    e.printStackTrace();
-                } finally {
-                    // Count down the latch when the GUI is launched
-                    guiLatch.countDown();
-                }
-            });
-        }).start();
-
-        // Wait for the first GUI to be launched
-        guiLatch.await();
-
-        // Launch the second JavaFX application in a separate thread
-        new Thread(() -> {
-            Platform.runLater(() -> {
-                GoGUI secondGoGUI = new GoGUI(this);
-                try {
-                    secondGoGUI.start(new Stage());
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            });
-        }).start();
-
-//        while(isGameOngoing){
-//
-//            message = receiveMessage();
-//            System.out.println(message);
-//
-//            if(message.equals("Your move") || message.equals("Your move was incorrect"))
-//                currentMove = scanner.nextLine();
-//
-//            sendMessage(currentMove);
-//        }
+        // Your game logic here
     }
 
     @Override
     public void start(Stage stage) throws Exception {
-
+        // Implement if needed
     }
-
-
 }

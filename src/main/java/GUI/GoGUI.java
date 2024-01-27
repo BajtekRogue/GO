@@ -24,6 +24,7 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 
 import java.io.IOException;
 import java.util.List;
@@ -44,6 +45,7 @@ public class GoGUI extends Application {
     private Canvas canvas;
     private Button[][] buttons;
     private  Client client;
+
     public GoGUI(Client client) {
         GameMaster gameMaster = new GameMaster(BOARD_SIZE);
         this.currentPlayer = StoneColor.BLACK;
@@ -56,13 +58,14 @@ public class GoGUI extends Application {
     }
 
     @Override
-    public void start(Stage primaryStage) {
+    public void start(Stage primaryStage) throws IOException {
 //        GameMaster gameMaster = new GameMaster(BOARD_SIZE);
 //        this.currentPlayer = StoneColor.BLACK;
         primaryStage.setTitle("Go Game");
         primaryStage.setResizable(false);
         Pane root = new Pane();
         root.setPadding(new Insets(10));
+
 
         // Board
         canvas = new Canvas((BOARD_SIZE) * TILE_SIZE, (BOARD_SIZE + 1) * TILE_SIZE);
@@ -122,19 +125,7 @@ public class GoGUI extends Application {
                 root.getChildren().add(button);
             }
         }
-//        // Centering the board
-//        double boardOffsetX = (canvas.getWidth() - BOARD_SIZE * TILE_SIZE) / 2 + 50; // Przesunięcie o 50 pikseli w prawo
-//        double boardOffsetY = (canvas.getHeight() - BOARD_SIZE * TILE_SIZE) / 2 + 50; // Przesunięcie o 50 pikseli w dół
-//        canvas.setLayoutX(boardOffsetX);
-//        canvas.setLayoutY(boardOffsetY);
-//
-//        // Centering the buttons
-//        for (int y = 0; y < BOARD_SIZE; y++) {
-//            for (int x = 0; x < BOARD_SIZE; x++) {
-//                buttons[x][y].setLayoutX(x * TILE_SIZE - DOT_SIZE + boardOffsetX);
-//                buttons[x][y].setLayoutY(y * TILE_SIZE - DOT_SIZE + boardOffsetY);
-//            }
-//        }
+
 
         drawGoBoard();
 
@@ -142,7 +133,44 @@ public class GoGUI extends Application {
         primaryStage.setScene(scene);
 
         primaryStage.show();
+        if (askForHuman()) {
+                client.sendGameWithHuman();
+        } else {
+            if(askForBot()){
+                client.sendGameWithBot();
+            }
+            else{
+                primaryStage.close();
+            }
+        }
     }
+
+    private boolean askForBot() {
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION,
+                "Do you want to play with a bot?",
+                ButtonType.YES, ButtonType.NO);
+        alert.initStyle(StageStyle.UTILITY);
+        alert.setHeaderText(null);
+        alert.setTitle("Game with bot?");
+
+        alert.showAndWait();
+
+        return alert.getResult() == ButtonType.YES;
+    }
+
+    private boolean askForHuman() {
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION,
+                "Do you want to play with a human?",
+                ButtonType.YES, ButtonType.NO);
+        alert.initStyle(StageStyle.UTILITY);
+        alert.setHeaderText(null);
+        alert.setTitle("Game with human?");
+
+        alert.showAndWait();
+
+        return alert.getResult() == ButtonType.YES;
+    }
+
     private void updateInfo() {
         // Update player turn label
         turnLabel.setText("Player Turn: " + currentPlayer.toString());
@@ -170,7 +198,13 @@ public class GoGUI extends Application {
         button.setLayoutX(x * TILE_SIZE - STONE_SIZE + 20);
         // + 20 to add margins
         button.setLayoutY(y * TILE_SIZE - STONE_SIZE + 20);
-        button.setOnAction(e -> handleButtonClick(x, y));
+        button.setOnAction(e -> {
+            try {
+                handleButtonClick(x, y);
+            } catch (IOException ex) {
+                throw new RuntimeException(ex);
+            }
+        });
         // Add highlighting effect on mouse enter for empty buttons
         button.setOnMouseEntered(event -> {
             if (BoardManager.getStone(x, y) == null) {
@@ -194,41 +228,39 @@ public class GoGUI extends Application {
         return button;
     }
 
-    private void handleButtonClick(int x, int y) {
-        try {
-
-
-            BoardManager.addStone(x, y, new Stone(currentPlayer));
-            NeighbourManager.addNeighbours(x, y);
-            NeighbourManager.updateNeighbours(x, y);
-            List<Coordinates> capturedStones = CaptureManager.checkForCapture(x, y);
-
-            // if KO then don't capture stones
-            ExceptionManager.checkForKO(x, y);
-            int numberOfCapturedStones = CaptureManager.removeCapturedStones(capturedStones);
-            if (numberOfCapturedStones > 0) {
-                if(currentPlayer == StoneColor.BLACK){
-                    BLACK_POINTS += numberOfCapturedStones;
-                } else {
-                    WHITE_POINTS += numberOfCapturedStones;
-                }
-            }
-            if (numberOfCapturedStones == 0) {
-                ExceptionManager.checkForSuicide(x, y);
-            }
-
-            if(numberOfCapturedStones == 1)
-                ExceptionManager.setKO_coordinates(capturedStones.get(0));
-            else
-                ExceptionManager.restKO_coordinates();
-
+    private void handleButtonClick(int x, int y) throws IOException {
+//        try {
+//            BoardManager.addStone(x, y, new Stone(currentPlayer));
+//            NeighbourManager.addNeighbours(x, y);
+//            NeighbourManager.updateNeighbours(x, y);
+//            List<Coordinates> capturedStones = CaptureManager.checkForCapture(x, y);
+//
+//            // if KO then don't capture stones
+//            ExceptionManager.checkForKO(x, y);
+//            int numberOfCapturedStones = CaptureManager.removeCapturedStones(capturedStones);
+//            if (numberOfCapturedStones > 0) {
+//                if(currentPlayer == StoneColor.BLACK){
+//                    BLACK_POINTS += numberOfCapturedStones;
+//                } else {
+//                    WHITE_POINTS += numberOfCapturedStones;
+//                }
+//            }
+//            if (numberOfCapturedStones == 0) {
+//                ExceptionManager.checkForSuicide(x, y);
+//            }
+//
+//            if(numberOfCapturedStones == 1)
+//                ExceptionManager.setKO_coordinates(capturedStones.get(0));
+//            else
+//                ExceptionManager.restKO_coordinates();
+            client.sendMove(x,y);
             updateStones();
             switchPlayer();
             updateInfo();
             consecutivePasses = 0;
-        } catch (OccupiedTileException | SuicideException | KOException ex) {
-            showAlert(ex.getMessage());
-        }
+//        } catch (OccupiedTileException | SuicideException | KOException ex) {
+//            showAlert(ex.getMessage());
+//        }
     }
     private void handleSurrenderButtonClick() {
         StoneColor winner = (currentPlayer == StoneColor.BLACK) ? StoneColor.WHITE : StoneColor.BLACK;

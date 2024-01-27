@@ -19,11 +19,11 @@ public class BoardManager {
         return board.getTile(x, y);
     }
 
-    public static void addStone(int x, int y, Stone stone) throws ArrayIndexOutOfBoundsException,
-            OccupiedTileException {
+    public static void addStone(int x, int y, Stone stone) throws ArrayIndexOutOfBoundsException
+           /*OccupiedTileException*/ {
 
-        if(!isTileFree(x, y))
-            throw new OccupiedTileException("Tile (" + x + "," + y  + ") is already occupied");
+//        if(!isTileFree(x, y))
+//            throw new OccupiedTileException("Tile (" + x + "," + y  + ") is already occupied");
         board.setTile(x, y, stone);
     }
 

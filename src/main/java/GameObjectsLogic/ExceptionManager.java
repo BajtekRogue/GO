@@ -22,26 +22,26 @@ public class ExceptionManager {
         KO_coordinates = new Coordinates(-1, -1);
     }
 
-    public static void checkForSuicide(int x, int y) throws SuicideException {
+    public static boolean checkForSuicide(int x, int y) {
         List<Coordinates> stonesToBeCaptured = CaptureManager.lookForChain(x, y);
 
         //if no stones can be captured return. If something breaks remove isEmpty()
         if (stonesToBeCaptured == null || stonesToBeCaptured.isEmpty())
-            return;
+            return false;
 
 
-        if(stonesToBeCaptured != null){
-            BoardManager.removeStone(x, y);
-            NeighbourManager.updateNeighbours(x, y);
-            throw new SuicideException("Cannot commit suicide!");
-        }
+        BoardManager.removeStone(x, y);
+        NeighbourManager.updateNeighbours(x, y);
+        return true;
+
     }
 
-    public static void checkForKO(int x, int y) throws KOException {
+    public static boolean checkForKO(int x, int y){
         if(x == KO_coordinates.getX() && y == KO_coordinates.getY()){
             BoardManager.removeStone(x, y);
             NeighbourManager.updateNeighbours(x, y);
-            throw new KOException("Cannot commit KO");
+            return true;
         }
+        return false;
     }
 }
