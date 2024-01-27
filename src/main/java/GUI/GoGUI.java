@@ -155,14 +155,6 @@ public class GoGUI extends Application {
                 primaryStage.close();
             }
         }
-
-        // wait for player to be ready to change the title
-//        while(client.getPlayerColor() == null){}
-//
-//        if(client.getPlayerColor() == StoneColor.WHITE)
-//                primaryStage.setTitle("Go Game: Player White");
-//            else
-//                primaryStage.setTitle("Go Game: Player Black");
     }
 
     public void toggleActivatePassButton(){
