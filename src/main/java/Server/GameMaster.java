@@ -4,10 +4,7 @@ import GameObjects.Board;
 import GameObjects.Coordinates;
 import GameObjects.Stone;
 import GameObjects.StoneColor;
-import GameObjectsLogic.BoardManager;
-import GameObjectsLogic.CaptureManager;
-import GameObjectsLogic.ExceptionManager;
-import GameObjectsLogic.NeighbourManager;
+import GameObjectsLogic.*;
 
 
 import java.util.List;
@@ -24,6 +21,7 @@ public class GameMaster {
         BoardManager boardManager = new BoardManager(board);
         NeighbourManager neighbourManager = new NeighbourManager(board);
         CaptureManager captureManager = new CaptureManager(board);
+        TerritoryManager territoryManager = new TerritoryManager(board);
     }
 
     public String makeAction(String message){
@@ -53,13 +51,12 @@ public class GameMaster {
                 consecutivePasses++;
                 // if 2 passes in a row end the game
                 if (consecutivePasses >= 2)
-                    return "ENDGAME";
-
+                    return endTheGame("ENDGAME");
 
                 return "PASS";
             case "Surrender":
                 System.out.println("SURRENDER");
-                return "SURRENDER";
+                return endTheGame("SURRENDER");
             default:
                 System.out.println("Unknown message type: " + messageType);
                 break;
@@ -120,11 +117,15 @@ public class GameMaster {
         currentPlayer = (currentPlayer == StoneColor.WHITE) ? StoneColor.BLACK : StoneColor.WHITE;
     }
 
-    public void endTheGame() {
+    public String endTheGame(String typeOfEnd) {
+        List<Coordinates> territoryWhite = TerritoryManager.lookForTerritory(StoneColor.WHITE);
+        List<Coordinates> territoryBlack = TerritoryManager.lookForTerritory(StoneColor.BLACK);
+        whitePoints += territoryWhite.size();
+        blackPoints += territoryBlack.size();
         System.out.println("The game has ended!");
         System.out.println("Black points: " + blackPoints);
         System.out.println("White points: " + whitePoints);
-        //add
+        return typeOfEnd + " Black points: " + blackPoints + " White points: " + whitePoints;
     }
 
 }

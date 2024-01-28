@@ -14,11 +14,11 @@ import static org.junit.Assert.*;
 
 public class ExceptionManagerTEST {
 
-    private static final int BOARD_SIZE = 10;
+    private static final int boardSize = 10;
 
     @Before
     public void setUp() {
-        Board board = new Board(BOARD_SIZE);
+        Board board = new Board(boardSize);
         ExceptionManager exceptionManager = new ExceptionManager();
         BoardManager boardManager = new BoardManager(board);
         NeighbourManager neighbourManager = new NeighbourManager(board);

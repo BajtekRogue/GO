@@ -11,13 +11,13 @@ import static org.junit.Assert.*;
 
 public class BoardManagerTEST {
 
-    private static final int BOARD_SIZE = 3;
+    private static final int boardSize = 3;
     private static Board board;
     private static BoardManager boardManager;
 
     @Before
     public void setUp() {
-        board = new Board(BOARD_SIZE);
+        board = new Board(boardSize);
         boardManager = new BoardManager(board);
     }
 
@@ -73,8 +73,8 @@ public class BoardManagerTEST {
 
         BoardManager.resetBoard();
 
-        for (int i = 0; i < BOARD_SIZE; i++) {
-            for (int j = 0; j < BOARD_SIZE; j++) {
+        for (int i = 0; i < boardSize; i++) {
+            for (int j = 0; j < boardSize; j++) {
                 assertNull(BoardManager.getStone(i, j));
             }
         }

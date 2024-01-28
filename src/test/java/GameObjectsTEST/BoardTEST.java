@@ -19,7 +19,7 @@ public class BoardTEST {
 
     @Test
     public void testGetBoardSize() {
-        assertEquals(3, board.getBOARD_SIZE());
+        assertEquals(3, board.getBoardSize());
     }
 
     @Test

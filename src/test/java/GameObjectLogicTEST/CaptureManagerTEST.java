@@ -17,14 +17,14 @@ import static org.junit.Assert.*;
 
 public class CaptureManagerTEST {
 
-    private static final int BOARD_SIZE = 10;
+    private static final int boardSize = 10;
     private static BoardManager boardManager;
     private static NeighbourManager neighbourManager;
     private static CaptureManager captureManager;
 
     @Before
     public void setUp() {
-        Board board = new Board(BOARD_SIZE);
+        Board board = new Board(boardSize);
         boardManager = new BoardManager(board);
         neighbourManager = new NeighbourManager(board);
         captureManager = new CaptureManager(board);

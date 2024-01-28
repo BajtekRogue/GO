@@ -120,10 +120,10 @@ public class Client extends Application {
                     goGUI.refreshGUIAfterPass();
                 }
                 else if(message.contains("SURRENDER")){
-                    goGUI.showWinnerDialog(playerColor);
+                    goGUI.showSurrenderDialog();
                 }
                 else if(message.contains("ENDGAME")){
-                    goGUI.endGame();
+                    goGUI.endGame(message);
                 }
 
 

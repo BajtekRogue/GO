@@ -9,7 +9,7 @@ public class NeighbourManager {
 
     public NeighbourManager(Board board){
         NeighbourManager.board = board;
-        arrayOfNeighbours = new ArrayOfNeighbours(board.getBOARD_SIZE());
+        arrayOfNeighbours = new ArrayOfNeighbours(board.getBoardSize());
     }
 
     public static ArrayOfNeighbours getArrayOfNeighbours() {

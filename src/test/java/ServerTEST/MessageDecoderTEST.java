@@ -1,23 +1,18 @@
-package GUI;
+package ServerTEST;
 
 import GameObjects.Coordinates;
-import org.junit.Before;
+import Server.MessageDecoder;
 import org.junit.Test;
 
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
-public class GoGUITEST {
+public class MessageDecoderTEST {
 
-    private static GoGUI goGUI;
-    @Before
-    public void setUp() {
-        goGUI = new GoGUI(null);
-    }
     @Test
     public void testStonesToBeAddedFromStringToCoordinates1(){
         String message = "Received message: OK MOVE 2 0 REMOVED 1 0 0 0 ";
-        Coordinates coordinates = goGUI.stonesToBeAddedFromStringToCoordinates(message);
+        Coordinates coordinates = MessageDecoder.stonesToBeAddedFromStringToCoordinates(message);
         assertEquals(2, coordinates.getX());
         assertEquals(0, coordinates.getY());
 
@@ -26,7 +21,7 @@ public class GoGUITEST {
     @Test
     public void testStonesToBeAddedFromStringToCoordinates2(){
         String message = "Received message: Player 1: OK MOVE 2 0 REMOVED 1 0 0 0 ";
-        Coordinates coordinates = goGUI.stonesToBeAddedFromStringToCoordinates(message);
+        Coordinates coordinates = MessageDecoder.stonesToBeAddedFromStringToCoordinates(message);
         assertEquals(2, coordinates.getX());
         assertEquals(0, coordinates.getY());
 
@@ -35,7 +30,7 @@ public class GoGUITEST {
     @Test
     public void testStonesToBeRemovedFromStringToCoordinates1() {
         String message = "Received message: OK MOVE 2 0 REMOVED 1 0 0 0 ";
-        List<Coordinates> removedCoordinates = goGUI.stonesToBeRemovedFromStringToCoordinates(message);
+        List<Coordinates> removedCoordinates = MessageDecoder.stonesToBeRemovedFromStringToCoordinates(message);
 
         assertEquals(2, removedCoordinates.size());
 
@@ -51,7 +46,7 @@ public class GoGUITEST {
     @Test
     public void testStonesToBeRemovedFromStringToCoordinates2() {
         String message = "Received message: Player 1: OK MOVE 2 0 REMOVED 1 0 0 0 ";
-        List<Coordinates> removedCoordinates = goGUI.stonesToBeRemovedFromStringToCoordinates(message);
+        List<Coordinates> removedCoordinates = MessageDecoder.stonesToBeRemovedFromStringToCoordinates(message);
 
         assertEquals(2, removedCoordinates.size());
 
@@ -66,8 +61,29 @@ public class GoGUITEST {
     @Test
     public void testStonesToBeRemovedFromStringToCoordinates3() {
         String message = "Received message: OK MOVE 2 0 ";
-        List<Coordinates> removedCoordinates = goGUI.stonesToBeRemovedFromStringToCoordinates(message);
+        List<Coordinates> removedCoordinates = MessageDecoder.stonesToBeRemovedFromStringToCoordinates(message);
 
         assertEquals(0, removedCoordinates.size());
     }
+
+    @Test
+    public void testExtractBlackPoints1(){
+        String message = "Received message: Player 2: ENDGAME Black points: 11 White points: 23";
+        int blackPoints = MessageDecoder.extractBlackPoints(message);
+        int whitePoints = MessageDecoder.extractWhitePoints(message);
+
+        assertEquals(blackPoints, 11);
+        assertEquals(whitePoints, 23);
+    }
+
+    @Test
+    public void testExtractBlackPoints2(){
+        String message = "Received message: ENDGAME Black points: 11 White points: 23";
+        int blackPoints = MessageDecoder.extractBlackPoints(message);
+        int whitePoints = MessageDecoder.extractWhitePoints(message);
+
+        assertEquals(blackPoints, 11);
+        assertEquals(whitePoints, 23);
+    }
+
 }

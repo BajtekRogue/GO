@@ -80,8 +80,9 @@ public class Server {
                         sendMessage(newPlayer.getOutputStream(),output);
                         broadcastMessage(newPlayer, output);
 
-                        if(output.contains("ENDGAME"))
-                            gameMaster.endTheGame();
+                        // close the server when game finishes
+                        if(output.contains("ENDGAME") || output.contains("SURRENDER"))
+                            System.exit(0);
                     }
                 }
 

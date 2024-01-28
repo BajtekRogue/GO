@@ -11,13 +11,13 @@ import static org.junit.Assert.*;
 
 public class NeighbourManagerTEST {
 
-    private static final int BOARD_SIZE = 3;
+    private static final int boardSize = 3;
     private static Board board;
     private static NeighbourManager neighbourManager;
 
     @Before
     public void setUp() {
-        board = new Board(BOARD_SIZE);
+        board = new Board(boardSize);
         neighbourManager = new NeighbourManager(board);
     }
 
@@ -77,8 +77,8 @@ public class NeighbourManagerTEST {
         board.setTile(2, 1, new Stone(StoneColor.BLACK));
         board.setTile(2, 2, new Stone(StoneColor.BLACK));
 
-        for (int i = 0; i < BOARD_SIZE; i++) {
-            for (int j = 0; j < BOARD_SIZE; j++) {
+        for (int i = 0; i < boardSize; i++) {
+            for (int j = 0; j < boardSize; j++) {
                 StoneNeighbours neighbours = neighbourManager.getArrayOfNeighbours().getNeighbours(i, j);
 
                 if(BoardManager.getStone(i, j) != null)

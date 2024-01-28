@@ -62,7 +62,7 @@ public class CaptureManager {
 
     public static List<Coordinates> lookForChain(int x, int y) {
         List<Coordinates> stonesToBeCaptured = new ArrayList<>();
-        boolean[][] visited = new boolean[board.getBOARD_SIZE()][board.getBOARD_SIZE()];
+        boolean[][] visited = new boolean[board.getBoardSize()][board.getBoardSize()];
 
         // Perform DFS to search for stones to be captured
         if(depthFirstSearch(x, y, stonesToBeCaptured, visited))
@@ -73,7 +73,7 @@ public class CaptureManager {
 
     private static boolean depthFirstSearch(int x, int y, List<Coordinates> stonesToBeCaptured, boolean[][] visited) {
         // Check if the current position is within bounds and not visited
-        if (x < 0 || y < 0 || x >= board.getBOARD_SIZE() || y >= board.getBOARD_SIZE() || visited[x][y])
+        if (x < 0 || y < 0 || x >= board.getBoardSize() || y >= board.getBoardSize() || visited[x][y])
             return false;
 
         visited[x][y] = true;

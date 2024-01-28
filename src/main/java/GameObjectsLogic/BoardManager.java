@@ -31,8 +31,8 @@ public class BoardManager {
     }
 
     public static void resetBoard() {
-        for(int j = board.getBOARD_SIZE() - 1; j >= 0; j--) {
-            for (int i = 0; i < board.getBOARD_SIZE(); i++) {
+        for(int j = board.getBoardSize() - 1; j >= 0; j--) {
+            for (int i = 0; i < board.getBoardSize(); i++) {
                 board.setTile(i, j, null);
             }
         }

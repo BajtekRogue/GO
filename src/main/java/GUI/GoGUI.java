@@ -4,8 +4,8 @@ import GameObjects.Board;
 import GameObjects.Coordinates;
 import GameObjects.Stone;
 import GameObjects.StoneColor;
-import GameObjectsLogic.BoardManager;
 import Server.Client;
+import Server.MessageDecoder;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
@@ -25,7 +25,6 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 public class GoGUI extends Application {
@@ -43,10 +42,10 @@ public class GoGUI extends Application {
     private StoneColor currentPlayer;
     private Canvas canvas;
     private Button[][] buttons;
-    private Client client;
-    private Board board;
-    private BooleanProperty activatePassButton = new SimpleBooleanProperty(false);
-    private BooleanProperty activateFFButton = new SimpleBooleanProperty(false);
+    private final Client client;
+    private final Board board;
+    private final BooleanProperty activatePassButton = new SimpleBooleanProperty(false);
+    private final BooleanProperty activateFFButton = new SimpleBooleanProperty(false);
     private Stage primaryStage;
 
     public GoGUI(Client client) {
@@ -256,16 +255,8 @@ public class GoGUI extends Application {
             Alert alert = new Alert(Alert.AlertType.INFORMATION, message, ButtonType.OK);
             alert.initOwner(primaryStage);
             alert.setOnCloseRequest(event -> closeGUI());
+            alert.setHeaderText("Game over");
             alert.showAndWait();
-
-//        // After showing the result we ask the player for next game
-//        if (askForNewGame()) {
-//            // Yes - we reset the game
-//            resetGame();
-//        } else {
-//            // No - we close the app
-//            System.exit(0);
-//        }
         });
 
 
@@ -277,19 +268,34 @@ public class GoGUI extends Application {
             Alert alert = new Alert(Alert.AlertType.INFORMATION, message, ButtonType.OK);
             alert.initOwner(primaryStage);
             alert.setOnCloseRequest(event -> closeGUI());
+            alert.setHeaderText("Game over");
             alert.showAndWait();
-            //        // After showing the result we ask the player for next game
-//        if (askForNewGame()) {
-//            // Yes - we reset the game
-//            resetGame();
-//        } else {
-//            // No - we close the app
-//            System.exit(0);
-//        }
         });
 
     }
-    public void endGame() {
+
+    public void showSurrenderDialog() {
+        Platform.runLater(() -> {
+            StoneColor loser = currentPlayer;
+            StoneColor winner;
+            if(loser == StoneColor.WHITE)
+                winner = StoneColor.BLACK;
+            else
+                winner = StoneColor.WHITE;
+
+            String message =  loser.toString() + " has surrendered! " + winner.toString() + " has won";
+            Alert alert = new Alert(Alert.AlertType.INFORMATION, message, ButtonType.OK);
+            alert.initOwner(primaryStage);
+            alert.setOnCloseRequest(event -> closeGUI());
+            alert.setHeaderText("Game over");
+            alert.showAndWait();
+        });
+
+
+    }
+    public void endGame(String message) {
+        whitePoints = MessageDecoder.extractWhitePoints(message);
+        blackPoints = MessageDecoder.extractBlackPoints(message);
         if(blackPoints > whitePoints) {
             showWinnerDialog(StoneColor.BLACK);
         } else if (whitePoints > blackPoints) {
@@ -299,30 +305,30 @@ public class GoGUI extends Application {
         }
     }
 
-    private boolean askForNewGame() {
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "Play again?", ButtonType.YES, ButtonType.NO);
-        alert.initOwner(primaryStage);
-        alert.showAndWait();
-        return alert.getResult() == ButtonType.YES;
-    }
-
-    private void resetGame() {
-        // Reset points
-        blackPoints = 0;
-        whitePoints = 0;
-
-        // Reset board
-        BoardManager.resetBoard();
-        updateStones();
-
-        // Reset player
-        currentPlayer = StoneColor.BLACK;
-        // Reset consecutive passes
-        consecutivePasses = 0;
-
-        // Update
-        updateInfo();
-    }
+//    private boolean askForNewGame() {
+//        Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "Play again?", ButtonType.YES, ButtonType.NO);
+//        alert.initOwner(primaryStage);
+//        alert.showAndWait();
+//        return alert.getResult() == ButtonType.YES;
+//    }
+//
+//    private void resetGame() {
+//        // Reset points
+//        blackPoints = 0;
+//        whitePoints = 0;
+//
+//        // Reset board
+//        BoardManager.resetBoard();
+//        updateStones();
+//
+//        // Reset player
+//        currentPlayer = StoneColor.BLACK;
+//        // Reset consecutive passes
+//        consecutivePasses = 0;
+//
+//        // Update
+//        updateInfo();
+//    }
 
     private void drawGoBoard() {
         GraphicsContext gc = canvas.getGraphicsContext2D();
@@ -398,6 +404,7 @@ public class GoGUI extends Application {
             Platform.runLater(() -> {
                 Alert alert = new Alert(Alert.AlertType.ERROR, message, ButtonType.OK);
                 alert.initOwner(primaryStage);
+                alert.setHeaderText("Illegal move");
                 alert.showAndWait();
             });
         }
@@ -418,70 +425,18 @@ public class GoGUI extends Application {
             blackPoints += points;
     }
 
-    public Coordinates stonesToBeAddedFromStringToCoordinates(String message){
 
-        String[] tokens = message.split("\\s+");
-        int xIndex = -1;
-        int yIndex = -1;
-
-        for (int i = 0; i < tokens.length; i++) {
-            if (tokens[i].equals("OK")) {
-                if (i + 2 < tokens.length) {
-                    xIndex = i + 2;
-                    yIndex = i + 3;
-                    break;
-                }
-            }
-        }
-
-        if (xIndex != -1 && yIndex != -1 && xIndex < tokens.length && yIndex < tokens.length) {
-            try {
-                int x = Integer.parseInt(tokens[xIndex]);
-                int y = Integer.parseInt(tokens[yIndex]);
-                return new Coordinates(x, y);
-            } catch (NumberFormatException e) {}
-        }
-
-        return new Coordinates(-1, -1);
-    }
-
-    public List<Coordinates> stonesToBeRemovedFromStringToCoordinates(String message){
-        List<Coordinates> coordinatesList = new ArrayList<>();
-        String[] tokens = message.split("\\s+");
-
-        for (int i = 0; i < tokens.length; i++) {
-            if (tokens[i].equals("REMOVED")) {
-                int remainingTokens = tokens.length - i - 1;
-                if (remainingTokens >= 2 && remainingTokens % 2 == 0) {
-                    for (int j = 0; j < remainingTokens; j += 2) {
-                        try {
-                            int x = Integer.parseInt(tokens[i + j + 1]);
-                            int y = Integer.parseInt(tokens[i + j + 2]);
-                            coordinatesList.add(new Coordinates(x, y));
-                        } catch (NumberFormatException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                }
-            }
-        }
-
-        return coordinatesList;
-    }
 
     public void refreshGUIAfterSuccessfulMove(String message){
-
         Platform.runLater(() -> {
-            Coordinates stoneToBeAdded = stonesToBeAddedFromStringToCoordinates(message);
-            List<Coordinates> stonesToBeRemoved = stonesToBeRemovedFromStringToCoordinates(message);
+            Coordinates stoneToBeAdded = MessageDecoder.stonesToBeAddedFromStringToCoordinates(message);
+            List<Coordinates> stonesToBeRemoved = MessageDecoder.stonesToBeRemovedFromStringToCoordinates(message);
             addStonesToBoard(stoneToBeAdded);
             removeStonesFromBoard(stonesToBeRemoved);
             updateStones();
             switchPlayer();
             updateInfo();
         });
-
-
     }
 
     public void refreshGUIAfterPass(){
@@ -496,8 +451,6 @@ public class GoGUI extends Application {
     }
 
     public void setGUITitle(StoneColor stoneColor){
-        Platform.runLater(() -> {
-            this.primaryStage.setTitle("PLAYER " + stoneColor.toString());
-        });
+        Platform.runLater(() -> this.primaryStage.setTitle("PLAYER " + stoneColor.toString()));
     }
 }
