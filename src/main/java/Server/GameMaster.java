@@ -14,7 +14,7 @@ public class GameMaster {
     private int blackPoints = 0;
     private int whitePoints = 0;
     private int consecutivePasses = 0;
-
+    private Bot bot;
 
     public GameMaster(int boardSize) {
         Board board = new Board(boardSize);
@@ -22,6 +22,14 @@ public class GameMaster {
         NeighbourManager neighbourManager = new NeighbourManager(board);
         CaptureManager captureManager = new CaptureManager(board);
         TerritoryManager territoryManager = new TerritoryManager(board);
+    }
+
+    public void setBot(StoneColor stoneColor, int boardSize){
+        bot = new Bot(stoneColor, boardSize);
+    }
+
+    public Bot getBot(){
+        return bot;
     }
 
     public String makeAction(String message){
@@ -59,12 +67,11 @@ public class GameMaster {
                 return endTheGame("SURRENDER");
             default:
                 System.out.println("Unknown message type: " + messageType);
-                break;
+                return "Unknown message type";
         }
-        return "It shouldn't be here (GameMaster makeAction)";
     }
 
-    private String handleMove(int x, int y) {
+    public String handleMove(int x, int y) {
 
         if (!BoardManager.isTileFree(x, y))
             return "OCCUPIED";

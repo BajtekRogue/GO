@@ -21,6 +21,7 @@ public class Server {
     private static int nextPlayerId = 1;
     private static int wantsHuman = 0;
     private static boolean humanGame = false;
+    private static boolean botGame = false;
     private static GameMaster gameMaster;
 
     public static void main(String[] args) {
@@ -58,39 +59,92 @@ public class Server {
         }
 
         // Start a new thread to handle messages from the current player
-        new Thread(() -> {
-            try {
-                while (true) {
-                    String message = receiveMessage(newPlayer.getInputStream());
+        new Thread(() -> handlePlayerMessages(newPlayer, playerId)).start();
 
-                    System.out.println("Received message from Player " + playerId + ": " + message);
+    }
 
-                    if (Objects.equals(message, "Human")) {
-                        wantsHuman++;
-                    }
+    private static void handlePlayerMessages(Player player, int playerId) {
 
-                    // Check if both players want to play with a human and start human game if it hasn't started yet
-                    if (wantsHuman == 2 && !humanGame) {
-                        broadcastMessageToAll("GameAccepted");
-                        startHumanGame();
-                    }
-                    if(humanGame){
-                        String output = gameMaster.makeAction(message);
-                        System.out.println(output);
-                        sendMessage(newPlayer.getOutputStream(),output);
-                        broadcastMessage(newPlayer, output);
+        try {
+            while (true) {
+                String message = receiveMessage(player.getInputStream());
 
-                        // close the server when game finishes
-                        if(output.contains("ENDGAME") || output.contains("SURRENDER"))
-                            System.exit(0);
-                    }
+                System.out.println("Received message from Player " + playerId + ": " + message);
+
+                if (Objects.equals(message, "Human")) {
+                    wantsHuman++;
+                }
+                if (Objects.equals(message, "Bot")) {
+                    broadcastMessageToAll("GameAccepted");
+                    startBotGame();
                 }
 
-            } catch (IOException | ClassNotFoundException e) {
-                System.out.println("Player " + playerId + " disconnected.");
-                players.remove(newPlayer);
+                // Check if both players want to play with a human and start human game if it hasn't started yet
+                if (wantsHuman == 2 && !humanGame) {
+                    broadcastMessageToAll("GameAccepted");
+                    startHumanGame();
+                }
+
+                if (humanGame) {
+                    handleHumanGame(player, message);
+                }
+
+                if (botGame) {
+                    handleBotGame(player, message);
+                }
             }
-        }).start();
+        } catch (IOException | ClassNotFoundException e) {
+            System.out.println("Player " + playerId + " disconnected.");
+            players.remove(player);
+        }
+    }
+
+    private static void handleHumanGame(Player player, String message) throws IOException, ClassNotFoundException {
+        String output = gameMaster.makeAction(message);
+        System.out.println(output);
+        sendMessage(player.getOutputStream(), output);
+        broadcastMessage(player, output);
+
+        // Close the server when the game finishes
+        if (output.contains("ENDGAME") || output.contains("SURRENDER")) {
+            System.exit(0);
+        }
+    }
+
+    private static void handleBotGame(Player player, String message) throws IOException, ClassNotFoundException {
+        String output = gameMaster.makeAction(message);
+        System.out.println(output);
+        sendMessage(player.getOutputStream(), output);
+
+        if (output.equals("Unknown message type") && player.getStoneColor() == StoneColor.BLACK) {
+            sendMessage(player.getOutputStream(), output);
+        } else if(output.equals("Unknown message type") && player.getStoneColor() == StoneColor.WHITE) {
+            try {
+                Thread.sleep(1000);
+                System.out.println("Waiting for bot to make move");
+            } catch (InterruptedException ignored) {}
+
+            String botOutput = gameMaster.getBot().finalBotMove(gameMaster);
+            System.out.println("Bot move: " + botOutput);
+            sendMessage(player.getOutputStream(), botOutput);
+        }
+        else{
+            try {
+                Thread.sleep(1000);
+                System.out.println("Waiting for bot to make move");
+            } catch (InterruptedException ignored) {}
+
+            if(output.contains("OK") || output.contains("PASS")){
+                String botOutput = gameMaster.getBot().finalBotMove(gameMaster);
+                System.out.println("Bot move: " + botOutput);
+                sendMessage(player.getOutputStream(), botOutput);
+            }
+        }
+
+        // Close the server when the game finishes
+        if (output.contains("ENDGAME") || output.contains("SURRENDER")) {
+            System.exit(0);
+        }
     }
     private static void broadcastMessage(Player sender, String message) {
         for (Player player : players) {
@@ -137,6 +191,23 @@ public class Server {
         players.get(1).setStoneColor(secondPlayerColor);
         sendMessage(players.get(0).getOutputStream(), firstPlayerColor.toString());
         sendMessage(players.get(1).getOutputStream(), secondPlayerColor.toString());
+
+    }
+
+    private static void startBotGame() throws IOException {
+
+        System.out.println("Game with bot is starting...");
+        botGame = true;
+        serverSocket.close();
+        gameMaster = new GameMaster(13);
+
+        // Choose a random color for the players
+        StoneColor firstPlayerColor = (new Random().nextBoolean()) ? StoneColor.BLACK : StoneColor.WHITE;
+        StoneColor secondPlayerColor = (firstPlayerColor == StoneColor.BLACK) ? StoneColor.WHITE : StoneColor.BLACK;
+
+        players.get(0).setStoneColor(firstPlayerColor);
+        sendMessage(players.get(0).getOutputStream(), firstPlayerColor.toString());
+        gameMaster.setBot(secondPlayerColor, 13);
 
     }
 }

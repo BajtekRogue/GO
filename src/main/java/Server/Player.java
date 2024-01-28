@@ -42,4 +42,8 @@ class Player {
     public void setStoneColor(StoneColor stoneColor) {
         this.stoneColor = stoneColor;
     }
+
+    public StoneColor getStoneColor() {
+        return stoneColor;
+    }
 }
