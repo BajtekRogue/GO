@@ -23,6 +23,7 @@ public class Server {
     private static boolean humanGame = false;
     private static boolean botGame = false;
     private static GameMaster gameMaster;
+    private static int boardSize = 13;
 
     public static void main(String[] args) {
         startServer();
@@ -182,7 +183,7 @@ public class Server {
         System.out.println("Game with humans is starting...");
         humanGame = true;
         serverSocket.close();
-        gameMaster = new GameMaster(13);
+        gameMaster = new GameMaster(boardSize);
 
         // Choose a random color for the players
         StoneColor firstPlayerColor = (new Random().nextBoolean()) ? StoneColor.BLACK : StoneColor.WHITE;
@@ -199,7 +200,7 @@ public class Server {
         System.out.println("Game with bot is starting...");
         botGame = true;
         serverSocket.close();
-        gameMaster = new GameMaster(13);
+        gameMaster = new GameMaster(boardSize);
 
         // Choose a random color for the players
         StoneColor firstPlayerColor = (new Random().nextBoolean()) ? StoneColor.BLACK : StoneColor.WHITE;
@@ -207,7 +208,7 @@ public class Server {
 
         players.get(0).setStoneColor(firstPlayerColor);
         sendMessage(players.get(0).getOutputStream(), firstPlayerColor.toString());
-        gameMaster.setBot(secondPlayerColor, 13);
+        gameMaster.setBot(secondPlayerColor, boardSize);
 
     }
 }

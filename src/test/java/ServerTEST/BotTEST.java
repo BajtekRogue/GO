@@ -1,2 +1,4 @@
-package ServerTEST;public class BotTEST {
+package ServerTEST;
+
+public class BotTEST {
 }

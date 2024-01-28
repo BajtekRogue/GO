@@ -157,13 +157,6 @@ public class Client extends Application {
         sendMessage("Bot");
     }
 
-    public void playAgainstBot() throws InterruptedException {
-        while (true) {
-            Thread.sleep(1000);
-            System.out.println("Bot");
-        }
-    }
-
     @Override
     public void start(Stage stage){
 
