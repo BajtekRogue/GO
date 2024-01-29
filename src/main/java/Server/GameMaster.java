@@ -1,9 +1,8 @@
 package Server;
 
-import GameObjects.Board;
-import GameObjects.Coordinates;
-import GameObjects.Stone;
-import GameObjects.StoneColor;
+import Bot.Bot;
+import Factories.StoneFactory;
+import GameObjects.*;
 import GameObjectsLogic.*;
 
 
@@ -79,7 +78,7 @@ public class GameMaster {
         // Stores the move
         StringBuilder result = new StringBuilder("OK MOVE ").append(x).append(" ").append(y);
 
-        BoardManager.addStone(x, y, new Stone(currentPlayer));
+        BoardManager.addStone(x, y, StoneFactory.createStoneInColor(currentPlayer));
         NeighbourManager.addNeighbours(x, y);
         NeighbourManager.updateNeighbours(x, y);
         List<Coordinates> capturedStones = CaptureManager.checkForCapture(x, y);

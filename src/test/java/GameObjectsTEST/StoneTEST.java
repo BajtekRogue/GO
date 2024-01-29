@@ -2,6 +2,7 @@ package GameObjectsTEST;
 
 import GameObjects.Stone;
 import GameObjects.StoneColor;
+import Factories.StoneFactory;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -10,19 +11,19 @@ public class StoneTEST {
 
     @Test
     public void testGetStoneColor() {
-        Stone stone = new Stone(StoneColor.BLACK);
+        Stone stone = StoneFactory.createBlackStone();
         assertEquals(StoneColor.BLACK, stone.getStoneColor());
     }
 
     @Test
     public void testCreateStoneWithWhiteColor() {
-        Stone stone = new Stone(StoneColor.WHITE);
+        Stone stone = StoneFactory.createWhiteStone();
         assertEquals(StoneColor.WHITE, stone.getStoneColor());
     }
 
     @Test
     public void testCreateStoneWithBlackColor() {
-        Stone stone = new Stone(StoneColor.BLACK);
+        Stone stone = StoneFactory.createBlackStone();
         assertEquals(StoneColor.BLACK, stone.getStoneColor());
     }
 

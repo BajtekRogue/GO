@@ -1,5 +1,6 @@
 package Server;
 
+import Factories.CoordinatesFactory;
 import GameObjects.Coordinates;
 
 import java.util.ArrayList;
@@ -26,12 +27,12 @@ public class MessageDecoder {
             try {
                 int x = Integer.parseInt(tokens[xIndex]);
                 int y = Integer.parseInt(tokens[yIndex]);
-                return new Coordinates(x, y);
+                return CoordinatesFactory.createCoordinates(x, y);
             } catch (NumberFormatException ignored) {
             }
         }
 
-        return new Coordinates(-1, -1);
+        return CoordinatesFactory.createCoordinates(-1, -1);
     }
 
     public static List<Coordinates> stonesToBeRemovedFromStringToCoordinates(String message) {
@@ -46,7 +47,7 @@ public class MessageDecoder {
                         try {
                             int x = Integer.parseInt(tokens[i + j + 1]);
                             int y = Integer.parseInt(tokens[i + j + 2]);
-                            coordinatesList.add(new Coordinates(x, y));
+                            coordinatesList.add(CoordinatesFactory.createCoordinates(x, y));
                         } catch (NumberFormatException ignored) {
                         }
                     }

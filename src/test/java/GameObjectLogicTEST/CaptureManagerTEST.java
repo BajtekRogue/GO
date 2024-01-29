@@ -1,9 +1,8 @@
 package GameObjectLogicTEST;
 
-import GameObjects.Board;
-import GameObjects.Coordinates;
-import GameObjects.Stone;
-import GameObjects.StoneColor;
+import Factories.CoordinatesFactory;
+import Factories.StoneFactory;
+import GameObjects.*;
 import GameObjectsLogic.BoardManager;
 import GameObjectsLogic.CaptureManager;
 import GameObjectsLogic.NeighbourManager;
@@ -31,85 +30,99 @@ public class CaptureManagerTEST {
     }
 
 
-
     @Test
-    public void testCheckForCapture1(){
+    public void testCheckForCapture1() {
 
         assertNotNull(boardManager);
         assertNotNull(neighbourManager);
         assertNotNull(captureManager);
 
-        BoardManager.addStone(2, 1, new Stone(StoneColor.WHITE));
-        BoardManager.addStone(2, 2, new Stone(StoneColor.WHITE));
-        BoardManager.addStone(2, 3, new Stone(StoneColor.WHITE));
-        BoardManager.addStone(2, 4, new Stone(StoneColor.WHITE));
-        BoardManager.addStone(3, 1, new Stone(StoneColor.WHITE));
-        BoardManager.addStone(4, 1, new Stone(StoneColor.WHITE));
-        BoardManager.addStone(4, 2, new Stone(StoneColor.WHITE));
-        BoardManager.addStone(4, 3, new Stone(StoneColor.WHITE));
-        BoardManager.addStone(4, 4, new Stone(StoneColor.WHITE));
+        BoardManager.addStone(2, 1, StoneFactory.createWhiteStone());
+        BoardManager.addStone(2, 2, StoneFactory.createWhiteStone());
+        BoardManager.addStone(2, 3, StoneFactory.createWhiteStone());
+        BoardManager.addStone(2, 4, StoneFactory.createWhiteStone());
+        BoardManager.addStone(3, 1, StoneFactory.createWhiteStone());
+        BoardManager.addStone(4, 1, StoneFactory.createWhiteStone());
+        BoardManager.addStone(4, 2, StoneFactory.createWhiteStone());
+        BoardManager.addStone(4, 3, StoneFactory.createWhiteStone());
+        BoardManager.addStone(4, 4, StoneFactory.createWhiteStone());
 
-        BoardManager.addStone(3, 3, new Stone(StoneColor.BLACK));
-        BoardManager.addStone(3, 2, new Stone(StoneColor.BLACK));
+        BoardManager.addStone(3, 3, StoneFactory.createBlackStone());
+        BoardManager.addStone(3, 2, StoneFactory.createBlackStone());
 
-        BoardManager.addStone(3, 4, new Stone(StoneColor.WHITE));
+        BoardManager.addStone(3, 4, StoneFactory.createWhiteStone());
 
         NeighbourManager.updateAllNeighbours();
         List<Coordinates> capturedStones = CaptureManager.checkForCapture(3, 4);
 
         assertEquals(2, capturedStones.size());
-        assertTrue(capturedStones.contains(new Coordinates(3, 3)));
-        assertTrue(capturedStones.contains(new Coordinates(3, 2)));
+        assertTrue(capturedStones.contains(CoordinatesFactory.createCoordinates(3, 3)));
+        assertTrue(capturedStones.contains(CoordinatesFactory.createCoordinates(3, 2)));
     }
 
 
     @Test
-    public void testCheckForCapture2(){
+    public void testCheckForCapture2() {
 
         assertNotNull(boardManager);
         assertNotNull(neighbourManager);
         assertNotNull(captureManager);
 
-        BoardManager.addStone(0, 9, new Stone(StoneColor.WHITE));
-        BoardManager.addStone(1, 8, new Stone(StoneColor.WHITE));
-        BoardManager.addStone(2, 8, new Stone(StoneColor.WHITE));
-        BoardManager.addStone(3, 7, new Stone(StoneColor.WHITE));
-        BoardManager.addStone(4, 9, new Stone(StoneColor.WHITE));
+        BoardManager.addStone(0, 9, StoneFactory.createWhiteStone());
+        BoardManager.addStone(1, 8, StoneFactory.createWhiteStone());
+        BoardManager.addStone(2, 8, StoneFactory.createWhiteStone());
+        BoardManager.addStone(3, 7, StoneFactory.createWhiteStone());
+        BoardManager.addStone(4, 9, StoneFactory.createWhiteStone());
 
 
-        BoardManager.addStone(1, 9, new Stone(StoneColor.BLACK));
-        BoardManager.addStone(2, 9, new Stone(StoneColor.BLACK));
-        BoardManager.addStone(3, 9, new Stone(StoneColor.BLACK));
-        BoardManager.addStone(3, 8, new Stone(StoneColor.BLACK));
+        BoardManager.addStone(1, 9, StoneFactory.createBlackStone());
+        BoardManager.addStone(2, 9, StoneFactory.createBlackStone());
+        BoardManager.addStone(3, 9, StoneFactory.createBlackStone());
+        BoardManager.addStone(3, 8, StoneFactory.createBlackStone());
 
-        BoardManager.addStone(4, 8, new Stone(StoneColor.WHITE));
+        BoardManager.addStone(4, 8, StoneFactory.createWhiteStone());
 
         NeighbourManager.updateAllNeighbours();
         List<Coordinates> capturedStones = CaptureManager.checkForCapture(4, 8);
 
         assertEquals(4, capturedStones.size());
-        assertTrue(capturedStones.contains(new Coordinates(1, 9)));
-        assertTrue(capturedStones.contains(new Coordinates(2, 9)));
-        assertTrue(capturedStones.contains(new Coordinates(3, 9)));
-        assertTrue(capturedStones.contains(new Coordinates(3, 8)));
+        assertTrue(capturedStones.contains(CoordinatesFactory.createCoordinates(1, 9)));
+        assertTrue(capturedStones.contains(CoordinatesFactory.createCoordinates(2, 9)));
+        assertTrue(capturedStones.contains(CoordinatesFactory.createCoordinates(3, 9)));
+        assertTrue(capturedStones.contains(CoordinatesFactory.createCoordinates(3, 8)));
     }
 
     @Test
-    public void testCheckForCapture3(){
+    public void testCheckForCapture3() {
 
 
+        BoardManager.addStone(8, 9, StoneFactory.createBlackStone());
 
-        BoardManager.addStone(8, 9, new Stone(StoneColor.BLACK));
+        BoardManager.addStone(9, 9, StoneFactory.createWhiteStone());
 
-        BoardManager.addStone(9, 9, new Stone(StoneColor.WHITE));
-
-        BoardManager.addStone(9, 8, new Stone(StoneColor.BLACK));
+        BoardManager.addStone(9, 8, StoneFactory.createBlackStone());
 
         NeighbourManager.updateAllNeighbours();
         List<Coordinates> capturedStones = CaptureManager.checkForCapture(9, 8);
 
         assertEquals(1, capturedStones.size());
-        assertTrue(capturedStones.contains(new Coordinates(9, 9)));
+        assertTrue(capturedStones.contains(CoordinatesFactory.createCoordinates(9, 9)));
+    }
+
+    @Test
+    public void testCheckForCapture4() {
+
+        for (int i = 0; i < boardSize; i++) {
+            for (int j = 0; j < boardSize; j++) {
+                BoardManager.addStone(i, j, StoneFactory.createWhiteStone());
+            }
+        }
+
+        BoardManager.removeStone(0, 0);
+        BoardManager.addStone(0, 0, StoneFactory.createBlackStone());
+        NeighbourManager.updateAllNeighbours();
+        List<Coordinates> capturedStones = CaptureManager.checkForCapture(0, 0);
+        assertEquals(boardSize * boardSize - 1, capturedStones.size());
     }
 
 }

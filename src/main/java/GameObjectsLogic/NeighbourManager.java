@@ -1,5 +1,6 @@
 package GameObjectsLogic;
 
+import Factories.StoneNeighboursFactory;
 import GameObjects.*;
 
 
@@ -74,7 +75,7 @@ public class NeighbourManager {
             westState = NeighbourState.WALL;
         }
 
-        StoneNeighbours stoneNeighbours = new StoneNeighbours(northState, eastState, southState, westState);
+        StoneNeighbours stoneNeighbours = StoneNeighboursFactory.createStoneNeighbours(northState, eastState, southState, westState);
         arrayOfNeighbours.setNeighbours(x, y, stoneNeighbours);
 
     }

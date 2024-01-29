@@ -1,5 +1,6 @@
 package GameObjectLogicTEST;
 
+import Factories.StoneFactory;
 import GameObjects.*;
 import GameObjectsLogic.BoardManager;
 import GameObjectsLogic.NeighbourManager;
@@ -28,10 +29,10 @@ public class NeighbourManagerTEST {
 
     @Test
     public void testAddNeighbours() {
-        board.setTile(1, 1, new Stone(StoneColor.BLACK));
-        board.setTile(1, 2, new Stone(StoneColor.WHITE));
-        board.setTile(2, 1, new Stone(StoneColor.BLACK));
-        board.setTile(2, 2, new Stone(StoneColor.BLACK));
+        board.setTile(1, 1, StoneFactory.createBlackStone());
+        board.setTile(1, 2, StoneFactory.createWhiteStone());
+        board.setTile(2, 1, StoneFactory.createBlackStone());
+        board.setTile(2, 2, StoneFactory.createBlackStone());
 
         NeighbourManager.addNeighbours(1, 1);
         StoneNeighbours stoneNeighbours1 = NeighbourManager.getArrayOfNeighbours().getNeighbours(1, 1);
@@ -53,10 +54,10 @@ public class NeighbourManagerTEST {
     @Test
     public void testUpdateNeighbours() {
 
-        board.setTile(1, 1, new Stone(StoneColor.BLACK));
-        board.setTile(1, 2, new Stone(StoneColor.WHITE));
-        board.setTile(2, 1, new Stone(StoneColor.BLACK));
-        board.setTile(2, 2, new Stone(StoneColor.BLACK));
+        board.setTile(1, 1, StoneFactory.createBlackStone());
+        board.setTile(1, 2, StoneFactory.createWhiteStone());
+        board.setTile(2, 1, StoneFactory.createBlackStone());
+        board.setTile(2, 2, StoneFactory.createBlackStone());
 
         NeighbourManager.updateNeighbours(1,2);
         StoneNeighbours stoneNeighbours2 = NeighbourManager.getArrayOfNeighbours().getNeighbours(2, 2);
@@ -72,10 +73,10 @@ public class NeighbourManagerTEST {
 
         neighbourManager.updateAllNeighbours();
         BoardManager boardManager = new BoardManager(board);
-        board.setTile(1, 1, new Stone(StoneColor.BLACK));
-        board.setTile(1, 2, new Stone(StoneColor.WHITE));
-        board.setTile(2, 1, new Stone(StoneColor.BLACK));
-        board.setTile(2, 2, new Stone(StoneColor.BLACK));
+        board.setTile(1, 1, StoneFactory.createBlackStone());
+        board.setTile(1, 2, StoneFactory.createWhiteStone());
+        board.setTile(2, 1, StoneFactory.createBlackStone());
+        board.setTile(2, 2, StoneFactory.createBlackStone());
 
         for (int i = 0; i < boardSize; i++) {
             for (int j = 0; j < boardSize; j++) {

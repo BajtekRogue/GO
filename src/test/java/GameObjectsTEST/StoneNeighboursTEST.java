@@ -2,6 +2,7 @@ package GameObjectsTEST;
 
 import GameObjects.NeighbourState;
 import GameObjects.StoneNeighbours;
+import Factories.StoneNeighboursFactory;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -10,7 +11,7 @@ public class StoneNeighboursTEST {
 
     @Test
     public void testGetAndSetStates() {
-        StoneNeighbours stoneNeighbours = new StoneNeighbours(NeighbourState.EMPTY, NeighbourState.WALL, NeighbourState.ENEMY, NeighbourState.ALLY);
+        StoneNeighbours stoneNeighbours = StoneNeighboursFactory.createStoneNeighbours(NeighbourState.EMPTY, NeighbourState.WALL, NeighbourState.ENEMY, NeighbourState.ALLY);
 
         assertEquals(NeighbourState.EMPTY, stoneNeighbours.getNorth());
         assertEquals(NeighbourState.WALL, stoneNeighbours.getEast());
@@ -30,7 +31,7 @@ public class StoneNeighboursTEST {
 
     @Test
     public void testNumberOfBreathsAndConnections() {
-        StoneNeighbours stoneNeighbours = new StoneNeighbours(NeighbourState.EMPTY, NeighbourState.WALL, NeighbourState.ENEMY, NeighbourState.ALLY);
+        StoneNeighbours stoneNeighbours = StoneNeighboursFactory.createStoneNeighbours(NeighbourState.EMPTY, NeighbourState.WALL, NeighbourState.ENEMY, NeighbourState.ALLY);
         assertEquals(1, stoneNeighbours.getNumberOfBreaths());
         assertEquals(1, stoneNeighbours.getNumberOfConnections());
 

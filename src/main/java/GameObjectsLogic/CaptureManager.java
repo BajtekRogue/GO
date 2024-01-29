@@ -1,9 +1,7 @@
 package GameObjectsLogic;
 
-import GameObjects.Board;
-import GameObjects.Coordinates;
-import GameObjects.NeighbourState;
-import GameObjects.StoneNeighbours;
+import Factories.CoordinatesFactory;
+import GameObjects.*;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -85,27 +83,27 @@ public class CaptureManager {
         if (currentNeighbours.getNumberOfBreaths() > 0)
             return true; // Stop the search
         if(currentNeighbours.getNumberOfConnections() == 0){
-            stonesToBeCaptured.add(new Coordinates(x, y));
+            stonesToBeCaptured.add(CoordinatesFactory.createCoordinates(x, y));
             return false;
         }
         // Check each direction
         if (currentNeighbours.getNorth() == NeighbourState.ALLY) {
-            stonesToBeCaptured.add(new Coordinates(x, y));
+            stonesToBeCaptured.add(CoordinatesFactory.createCoordinates(x, y));
             if (depthFirstSearch(x, y + 1, stonesToBeCaptured, visited))
                 return true;
         }
         if (currentNeighbours.getEast() == NeighbourState.ALLY) {
-            stonesToBeCaptured.add(new Coordinates(x, y));
+            stonesToBeCaptured.add(CoordinatesFactory.createCoordinates(x, y));
             if (depthFirstSearch(x + 1, y, stonesToBeCaptured, visited))
                 return true;
         }
         if (currentNeighbours.getSouth() == NeighbourState.ALLY) {
-            stonesToBeCaptured.add(new Coordinates(x, y));
+            stonesToBeCaptured.add(CoordinatesFactory.createCoordinates(x, y));
             if (depthFirstSearch(x, y - 1, stonesToBeCaptured, visited))
                 return true;
         }
         if (currentNeighbours.getWest() == NeighbourState.ALLY) {
-            stonesToBeCaptured.add(new Coordinates(x, y));
+            stonesToBeCaptured.add(CoordinatesFactory.createCoordinates(x, y));
             return depthFirstSearch(x - 1, y, stonesToBeCaptured, visited);
         }
 

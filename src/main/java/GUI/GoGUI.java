@@ -1,9 +1,7 @@
 package GUI;
 
-import GameObjects.Board;
-import GameObjects.Coordinates;
-import GameObjects.Stone;
-import GameObjects.StoneColor;
+import Factories.StoneFactory;
+import GameObjects.*;
 import Server.Client;
 import Server.MessageDecoder;
 import javafx.application.Application;
@@ -411,7 +409,7 @@ public class GoGUI extends Application {
     }
 
     public void addStonesToBoard(Coordinates coordinates){
-        board.setTile(coordinates.getX(), coordinates.getY(), new Stone(currentPlayer));
+        board.setTile(coordinates.getX(), coordinates.getY(), StoneFactory.createStoneInColor(currentPlayer));
     }
 
     public void removeStonesFromBoard(List<Coordinates> listOfStones){

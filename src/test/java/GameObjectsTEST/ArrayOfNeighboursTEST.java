@@ -3,6 +3,7 @@ package GameObjectsTEST;
 import GameObjects.ArrayOfNeighbours;
 import GameObjects.NeighbourState;
 import GameObjects.StoneNeighbours;
+import Factories.StoneNeighboursFactory;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -26,7 +27,7 @@ public class ArrayOfNeighboursTEST {
     @Test
     public void testGetAndSetNeighbours() {
 
-        StoneNeighbours stoneNeighbours = new StoneNeighbours(NeighbourState.ENEMY, NeighbourState.ALLY, NeighbourState.EMPTY, NeighbourState.WALL);
+        StoneNeighbours stoneNeighbours = StoneNeighboursFactory.createStoneNeighbours(NeighbourState.ENEMY, NeighbourState.ALLY, NeighbourState.EMPTY, NeighbourState.WALL);
         arrayOfNeighbours.setNeighbours(1, 1, stoneNeighbours);
         assertEquals(stoneNeighbours, arrayOfNeighbours.getNeighbours(1, 1));
     }
@@ -38,7 +39,7 @@ public class ArrayOfNeighboursTEST {
 
     @Test(expected = ArrayIndexOutOfBoundsException.class)
     public void testSetNeighboursOutOfBounds() {
-        StoneNeighbours stoneNeighbours = new StoneNeighbours(NeighbourState.EMPTY, NeighbourState.ALLY, NeighbourState.WALL, NeighbourState.ENEMY);
+        StoneNeighbours stoneNeighbours = StoneNeighboursFactory.createStoneNeighbours(NeighbourState.EMPTY, NeighbourState.ALLY, NeighbourState.WALL, NeighbourState.ENEMY);
         arrayOfNeighbours.setNeighbours(14, 1, stoneNeighbours);
     }
 

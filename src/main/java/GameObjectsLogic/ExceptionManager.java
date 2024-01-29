@@ -1,12 +1,13 @@
 package GameObjectsLogic;
 
+import Factories.CoordinatesFactory;
 import GameObjects.Coordinates;
 
 import java.util.List;
 
 public class ExceptionManager {
 
-    private static Coordinates KO_coordinates = new Coordinates(-1, -1);
+    private static Coordinates KO_coordinates = CoordinatesFactory.createCoordinates(-1, -1);
 
     public static void setKO_coordinates(Coordinates KO_position) {
         KO_coordinates = KO_position;
@@ -17,7 +18,7 @@ public class ExceptionManager {
     }
 
     public static void restKO_coordinates(){
-        KO_coordinates = new Coordinates(-1, -1);
+        KO_coordinates = CoordinatesFactory.createCoordinates(-1, -1);
     }
 
     public static boolean checkForSuicide(int x, int y) {

@@ -139,7 +139,6 @@ public class Client extends Application {
 
     private void sendMessage(String message) throws IOException {
         outputStream.writeObject(message);
-
     }
     public void sendMove(int x, int y) throws IOException {
         sendMessage("Move " + x + " " + y);

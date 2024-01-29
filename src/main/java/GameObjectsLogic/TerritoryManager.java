@@ -1,6 +1,7 @@
 package GameObjectsLogic;
 
 
+import Factories.CoordinatesFactory;
 import GameObjects.*;
 
 import java.util.ArrayList;
@@ -42,7 +43,7 @@ public class TerritoryManager {
         Stone stone = board.getTile(x, y);
 
         if (stone == null)
-            territory.add(new Coordinates(x, y));
+            territory.add(CoordinatesFactory.createCoordinates(x, y));
         else
             return playerColor != stone.getStoneColor();
 

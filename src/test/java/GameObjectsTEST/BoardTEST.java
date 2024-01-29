@@ -2,7 +2,7 @@ package GameObjectsTEST;
 
 import GameObjects.Board;
 import GameObjects.Stone;
-import GameObjects.StoneColor;
+import Factories.StoneFactory;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -24,7 +24,7 @@ public class BoardTEST {
 
     @Test
     public void testGetAndSetTile() {
-        Stone stone = new Stone(StoneColor.WHITE);
+        Stone stone = StoneFactory.createWhiteStone();
         board.setTile(1, 1, stone);
         assertEquals(stone, board.getTile(1, 1));
     }
@@ -41,13 +41,13 @@ public class BoardTEST {
 
     @Test(expected = ArrayIndexOutOfBoundsException.class)
     public void testSetTileOutOfBounds1() {
-        Stone stone = new Stone(StoneColor.BLACK);
+        Stone stone = StoneFactory.createBlackStone();
         board.setTile(4, 4, stone);
     }
 
     @Test(expected = ArrayIndexOutOfBoundsException.class)
     public void testSetTileOutOfBounds2() {
-        Stone stone = new Stone(StoneColor.BLACK);
+        Stone stone = StoneFactory.createBlackStone();
         board.setTile(-8, 0, stone);
     }
 }

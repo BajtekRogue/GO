@@ -1,4 +1,4 @@
-package ServerTEST;
+package BotTEST;
 
 public class BotTEST {
 }

@@ -2,7 +2,7 @@ package GameObjectLogicTEST;
 
 import GameObjects.Board;
 import GameObjects.Stone;
-import GameObjects.StoneColor;
+import Factories.StoneFactory;
 import GameObjectsLogic.BoardManager;
 import org.junit.Before;
 import org.junit.Test;
@@ -28,7 +28,7 @@ public class BoardManagerTEST {
 
     @Test
     public void testAddAndRemoveStone() {
-        Stone stone = new Stone(StoneColor.BLACK);
+        Stone stone = StoneFactory.createBlackStone();
 
 
         try {
@@ -53,7 +53,7 @@ public class BoardManagerTEST {
         assertTrue(BoardManager.isTileFree(0, 0));
 
         try {
-            BoardManager.addStone(0, 0, new Stone(StoneColor.WHITE));
+            BoardManager.addStone(0, 0, StoneFactory.createWhiteStone());
         } catch (ArrayIndexOutOfBoundsException e) {
             fail("Unexpected exception: " + e.getMessage());
         }
@@ -63,7 +63,7 @@ public class BoardManagerTEST {
 
     @Test
     public void testResetBoard() {
-        Stone stone = new Stone(StoneColor.WHITE);
+        Stone stone = StoneFactory.createWhiteStone();
 
         try {
             BoardManager.addStone(1, 1, stone);

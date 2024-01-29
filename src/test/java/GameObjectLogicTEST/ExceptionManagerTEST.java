@@ -1,5 +1,7 @@
 package GameObjectLogicTEST;
 
+import Factories.CoordinatesFactory;
+import Factories.StoneFactory;
 import GameObjects.*;
 import GameObjectsLogic.CaptureManager;
 import GameObjectsLogic.BoardManager;
@@ -27,7 +29,7 @@ public class ExceptionManagerTEST {
 
     @Test
     public void testSetAndGetKO_coordinates() {
-        Coordinates koCoordinates = new Coordinates(1, 1);
+        Coordinates koCoordinates = CoordinatesFactory.createCoordinates(1, 1);
         ExceptionManager.setKO_coordinates(koCoordinates);
 
         assertEquals(koCoordinates, ExceptionManager.getKO_coordinates());
@@ -35,25 +37,25 @@ public class ExceptionManagerTEST {
 
     @Test
     public void testRestKO_coordinates() {
-        Coordinates koCoordinates = new Coordinates(1, 1);
+        Coordinates koCoordinates = CoordinatesFactory.createCoordinates(1, 1);
         ExceptionManager.setKO_coordinates(koCoordinates);
 
         ExceptionManager.restKO_coordinates();
 
-        assertEquals(new Coordinates(-1, -1), ExceptionManager.getKO_coordinates());
+        assertEquals(CoordinatesFactory.createCoordinates(-1, -1), ExceptionManager.getKO_coordinates());
     }
 
     @Test
     public void testCheckForSuicide1(){
 
 
-        BoardManager.addStone(5, 4, new Stone(StoneColor.WHITE));
-        BoardManager.addStone(5, 6, new Stone(StoneColor.WHITE));
-        BoardManager.addStone(4, 5, new Stone(StoneColor.WHITE));
-        BoardManager.addStone(6, 5, new Stone(StoneColor.WHITE));
+        BoardManager.addStone(5, 4, StoneFactory.createWhiteStone());
+        BoardManager.addStone(5, 6, StoneFactory.createWhiteStone());
+        BoardManager.addStone(4, 5, StoneFactory.createWhiteStone());
+        BoardManager.addStone(6, 5, StoneFactory.createWhiteStone());
         NeighbourManager.updateAllNeighbours();
 
-        BoardManager.addStone(5, 5, new Stone(StoneColor.BLACK));
+        BoardManager.addStone(5, 5, StoneFactory.createBlackStone());
         NeighbourManager.addNeighbours(5, 5);
         NeighbourManager.updateNeighbours(5, 5);
 
@@ -71,13 +73,13 @@ public class ExceptionManagerTEST {
     public void testCheckForSuicide2(){
 
 
-        BoardManager.addStone(5, 4, new Stone(StoneColor.WHITE));
-        BoardManager.addStone(5, 6, new Stone(StoneColor.WHITE));
-        BoardManager.addStone(4, 5, new Stone(StoneColor.WHITE));
-        BoardManager.addStone(6, 5, new Stone(StoneColor.WHITE));
+        BoardManager.addStone(5, 4, StoneFactory.createWhiteStone());
+        BoardManager.addStone(5, 6, StoneFactory.createWhiteStone());
+        BoardManager.addStone(4, 5, StoneFactory.createWhiteStone());
+        BoardManager.addStone(6, 5, StoneFactory.createWhiteStone());
         NeighbourManager.updateAllNeighbours();
 
-        BoardManager.addStone(5, 5, new Stone(StoneColor.BLACK));
+        BoardManager.addStone(5, 5, StoneFactory.createBlackStone());
         NeighbourManager.addNeighbours(5, 5);
         NeighbourManager.updateNeighbours(5, 5);
 
@@ -94,12 +96,12 @@ public class ExceptionManagerTEST {
     public void testCheckForSuicide3(){
 
 
-        BoardManager.addStone(0, 1, new Stone(StoneColor.WHITE));
-        BoardManager.addStone(1, 0, new Stone(StoneColor.WHITE));
+        BoardManager.addStone(0, 1, StoneFactory.createWhiteStone());
+        BoardManager.addStone(1, 0, StoneFactory.createWhiteStone());
 
         NeighbourManager.updateAllNeighbours();
 
-        BoardManager.addStone(0, 0, new Stone(StoneColor.BLACK));
+        BoardManager.addStone(0, 0, StoneFactory.createBlackStone());
         NeighbourManager.addNeighbours(0, 0);
         NeighbourManager.updateNeighbours(0, 0);
 
@@ -117,13 +119,13 @@ public class ExceptionManagerTEST {
     public void testCheckForSuicide4(){
 
 
-        BoardManager.addStone(0, 4, new Stone(StoneColor.WHITE));
-        BoardManager.addStone(0, 6, new Stone(StoneColor.WHITE));
-        BoardManager.addStone(1, 5, new Stone(StoneColor.WHITE));
+        BoardManager.addStone(0, 4, StoneFactory.createWhiteStone());
+        BoardManager.addStone(0, 6, StoneFactory.createWhiteStone());
+        BoardManager.addStone(1, 5, StoneFactory.createWhiteStone());
 
         NeighbourManager.updateAllNeighbours();
 
-        BoardManager.addStone(0, 5, new Stone(StoneColor.BLACK));
+        BoardManager.addStone(0, 5, StoneFactory.createBlackStone());
         NeighbourManager.addNeighbours(0, 5);
         NeighbourManager.updateNeighbours(0, 5);
 
@@ -140,17 +142,17 @@ public class ExceptionManagerTEST {
     @Test
     public void testCheckForKO(){
 
-        BoardManager.addStone(0, 1, new Stone(StoneColor.BLACK));
-        BoardManager.addStone(1, 0, new Stone(StoneColor.BLACK));
-        BoardManager.addStone(1, 2, new Stone(StoneColor.BLACK));
-        BoardManager.addStone(1, 1, new Stone(StoneColor.WHITE));
-        BoardManager.addStone(2, 2, new Stone(StoneColor.WHITE));
-        BoardManager.addStone(2, 0, new Stone(StoneColor.WHITE));
-        BoardManager.addStone(3, 1, new Stone(StoneColor.WHITE));
+        BoardManager.addStone(0, 1, StoneFactory.createBlackStone());
+        BoardManager.addStone(1, 0, StoneFactory.createBlackStone());
+        BoardManager.addStone(1, 2, StoneFactory.createBlackStone());
+        BoardManager.addStone(1, 1, StoneFactory.createWhiteStone());
+        BoardManager.addStone(2, 2, StoneFactory.createWhiteStone());
+        BoardManager.addStone(2, 0, StoneFactory.createWhiteStone());
+        BoardManager.addStone(3, 1, StoneFactory.createWhiteStone());
 
         NeighbourManager.updateAllNeighbours();
 
-        BoardManager.addStone(2, 1, new Stone(StoneColor.BLACK));
+        BoardManager.addStone(2, 1, StoneFactory.createBlackStone());
         NeighbourManager.addNeighbours(2, 1);
         NeighbourManager.updateNeighbours(2, 1);
         List<Coordinates> capturedStones = CaptureManager.checkForCapture(2, 1);
@@ -161,7 +163,7 @@ public class ExceptionManagerTEST {
         else
             ExceptionManager.restKO_coordinates();
 
-        BoardManager.addStone(1, 1, new Stone(StoneColor.WHITE));
+        BoardManager.addStone(1, 1, StoneFactory.createWhiteStone());
         NeighbourManager.addNeighbours(1, 1);
         NeighbourManager.updateNeighbours(1, 1);
         assertTrue(ExceptionManager.checkForKO(1, 1));
