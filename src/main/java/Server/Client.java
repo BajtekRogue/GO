@@ -1,5 +1,6 @@
 package Server;
 
+import ClientCommands.*;
 import GUI.GoGUI;
 import GameObjects.StoneColor;
 import javafx.application.Application;
@@ -10,6 +11,8 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 
 public class Client extends Application {
@@ -22,11 +25,26 @@ public class Client extends Application {
     private boolean myTurn = false;
     private StoneColor playerColor;
     private GoGUI goGUI;
+    private Map<String, Command> commandMap = new HashMap<>();
     public Client() {
+        commandMap.put("GameAccepted", new GameAcceptedCommand());
+        commandMap.put("BLACK", new BlackCommand());
+        commandMap.put("WHITE", new WhiteCommand());
+        commandMap.put("KO", new KOCommand());
+        commandMap.put("OK", new LegalMoveCommand());
+        commandMap.put("SUICIDE", new SuicideCommand());
+        commandMap.put("OCCUPIED", new OccupiedCommand());
+        commandMap.put("PASS", new PassCommand());
+        commandMap.put("SURRENDER", new SurrenderCommand());
+        commandMap.put("ENDGAME", new EndgameCommand());
     }
 
     public boolean isMyTurn() {
         return myTurn;
+    }
+
+    public void setMyTurn(boolean myTurn) {
+        this.myTurn = myTurn;
     }
 
     public void switchTurn(){
@@ -35,8 +53,21 @@ public class Client extends Application {
     public StoneColor getPlayerColor(){
         return playerColor;
     }
+
+    public void setPlayerColor(StoneColor playerColor) {
+        this.playerColor = playerColor;
+    }
+
     public boolean isPlayerReady() {
         return isPlayerReady;
+    }
+
+    public void setPlayerReady() {
+        isPlayerReady = true;
+    }
+
+    public GoGUI getGoGUI() {
+        return goGUI;
     }
 
     public void run() {
@@ -44,13 +75,13 @@ public class Client extends Application {
             Socket socket = new Socket("localhost", PORT);
             outputStream = new ObjectOutputStream(socket.getOutputStream());
             inputStream = new ObjectInputStream(socket.getInputStream());
-            String message1 = receiveMessage();
+            String message = receiveMessage();
             goGUI = new GoGUI(this);
-            System.out.println(message1);
+            System.out.println(message);
 
-            if (message1.startsWith("You have successfully connected to the server as player")) {
+            if (message.startsWith("You have successfully connected to the server as player")) {
                 // Extract player ID from the notification
-                int playerID = Integer.parseInt(message1.replaceAll("[^0-9]", ""));
+                int playerID = Integer.parseInt(message.replaceAll("[^0-9]", ""));
                 System.out.println("Player ID: " + playerID);
                 System.out.println("Waiting for other players to join...");
 
@@ -83,50 +114,12 @@ public class Client extends Application {
                 String message = receiveMessage();
                 System.out.println("Received message: " + message);
 
-                // react accordingly to differently messages
-                if (message.equals("GameAccepted")) {
-                    isPlayerReady = true;
-                    System.out.println("The other player also wants to play!");
+                for (Map.Entry<String, Command> entry : commandMap.entrySet()) {
+                    if (message.contains(entry.getKey())) {
+                        entry.getValue().execute(this, message);
+                        break; // Only handle the first matching command
+                    }
                 }
-                else if(message.equals("BLACK")){
-                    playerColor = StoneColor.BLACK;
-                    myTurn = true;
-                    System.out.println("You are playing " + message);
-                    goGUI.toggleActivatePassButton();
-                    goGUI.toggleFFPassButton();
-                    goGUI.setGUITitle(playerColor);
-                }
-                else if(message.equals("WHITE")){
-                    playerColor = StoneColor.WHITE;
-                    myTurn = false;
-                    System.out.println("You are playing " + message);
-                    goGUI.setGUITitle(playerColor);
-                }
-                else if(message.contains("KO")){
-                    goGUI.showAlert("Cannot commit KO");
-                }
-                else if(message.contains("OK")){
-                    switchTurn();
-                    goGUI.refreshGUIAfterSuccessfulMove(message);
-                }
-                else if(message.contains("SUICIDE")){
-                    goGUI.showAlert("Cannot commit suicide");
-                }
-                else if(message.contains("OCCUPIED")){
-                    goGUI.showAlert("This tile is already occupied");
-                }
-                else if(message.contains("PASS")){
-                    switchTurn();
-                    goGUI.refreshGUIAfterPass();
-                }
-                else if(message.contains("SURRENDER")){
-                    goGUI.showSurrenderDialog();
-                }
-                else if(message.contains("ENDGAME")){
-                    goGUI.endGame(message);
-                }
-
-
             }
 
         } catch (IOException | ClassNotFoundException e) {

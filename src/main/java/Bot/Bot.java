@@ -15,7 +15,8 @@ public class Bot {
         this.botColor = botColor;
         this.boardSize = boardSize;
         //select MoveStrategy here
-        this.moveStrategy = new RandomMoveStrategy(boardSize);
+        //this.moveStrategy = new RandomMoveStrategy(boardSize);
+        this.moveStrategy = new MyMoveStrategy(boardSize, botColor);
     }
 
     public Coordinates makeMove() {

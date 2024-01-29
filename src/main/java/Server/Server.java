@@ -184,7 +184,6 @@ public class Server {
         humanGame = true;
         serverSocket.close();
         gameMaster = new GameMaster(boardSize);
-
         // Choose a random color for the players
         StoneColor firstPlayerColor = (new Random().nextBoolean()) ? StoneColor.BLACK : StoneColor.WHITE;
         StoneColor secondPlayerColor = (firstPlayerColor == StoneColor.BLACK) ? StoneColor.WHITE : StoneColor.BLACK;
@@ -201,11 +200,9 @@ public class Server {
         botGame = true;
         serverSocket.close();
         gameMaster = new GameMaster(boardSize);
-
         // Choose a random color for the players
         StoneColor firstPlayerColor = (new Random().nextBoolean()) ? StoneColor.BLACK : StoneColor.WHITE;
         StoneColor secondPlayerColor = (firstPlayerColor == StoneColor.BLACK) ? StoneColor.WHITE : StoneColor.BLACK;
-
         players.get(0).setStoneColor(firstPlayerColor);
         sendMessage(players.get(0).getOutputStream(), firstPlayerColor.toString());
         gameMaster.setBot(secondPlayerColor, boardSize);

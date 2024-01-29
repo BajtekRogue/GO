@@ -1,5 +1,6 @@
 package GameObjectsTEST;
 
+import Factories.CoordinatesFactory;
 import GameObjects.Coordinates;
 import org.junit.Test;
 
