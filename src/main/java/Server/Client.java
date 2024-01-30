@@ -12,6 +12,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 
@@ -26,17 +27,22 @@ public class Client extends Application {
     private StoneColor playerColor;
     private GoGUI goGUI;
     private Map<String, Command> commandMap = new HashMap<>();
+    private List<String> availableGames;
+    private Boolean updatedGames = false;
+
     public Client() {
         commandMap.put("GameAccepted", new GameAcceptedCommand());
         commandMap.put("BLACK", new BlackCommand());
         commandMap.put("WHITE", new WhiteCommand());
         commandMap.put("KO", new KOCommand());
+        commandMap.put("NOT", new OppositeLegalMoveCommand());
         commandMap.put("OK", new LegalMoveCommand());
         commandMap.put("SUICIDE", new SuicideCommand());
         commandMap.put("OCCUPIED", new OccupiedCommand());
         commandMap.put("PASS", new PassCommand());
         commandMap.put("SURRENDER", new SurrenderCommand());
         commandMap.put("ENDGAME", new EndgameCommand());
+        commandMap.put("GAMES", new ListOfGamesCommand());
     }
 
     public boolean isMyTurn() {
@@ -93,6 +99,8 @@ public class Client extends Application {
                         goGUI.start(new Stage());
                     } catch (IOException e) {
                         throw new RuntimeException(e);
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
                     }
                     guiLatch.countDown();
                 });
@@ -148,9 +156,41 @@ public class Client extends Application {
     public void sendGameWithBot() throws IOException {
         sendMessage("Bot");
     }
+    public void sendLoad() throws IOException {
+        sendMessage("Load");
+    }
 
     @Override
     public void start(Stage stage){
 
+    }
+
+    public void setUpdatedGamesTrue(){
+        updatedGames = true;
+    }
+    public void askForAvailableGames() throws IOException {
+        sendMessage("DBGames");
+    }
+
+    public boolean isGameListUpToDate(){
+        return updatedGames;
+    }
+    public void setAvailableGames(List<String> games){
+        availableGames = games;
+    }
+    public List<String> getAvailableGames(){
+        return availableGames;
+    }
+
+    public void loadMove(String selectedGame, int moveNumber) throws IOException {
+        sendMessage("LOAD " + selectedGame + " " + moveNumber);
+    }
+
+    public void deloadMove(String selectedGame, int moveNumber) throws IOException {
+        sendMessage("DLOAD " + selectedGame + " " + moveNumber);
+    }
+
+    public List<String> requestAvailableGames(String games) {
+        return MessageDecoder.parseGames(games);
     }
 }

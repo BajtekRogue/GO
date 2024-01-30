@@ -1,7 +1,9 @@
 package GUI;
 
-import Factories.StoneFactory;
-import GameObjects.*;
+import GameObjects.Board;
+import GameObjects.Coordinates;
+import GameObjects.Stone;
+import GameObjects.StoneColor;
 import Server.Client;
 import Server.MessageDecoder;
 import javafx.application.Application;
@@ -10,13 +12,12 @@ import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.Label;
+import javafx.scene.control.*;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
@@ -24,6 +25,9 @@ import javafx.stage.StageStyle;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
+
+import static java.lang.Thread.sleep;
 
 public class GoGUI extends Application {
 
@@ -45,6 +49,12 @@ public class GoGUI extends Application {
     private final BooleanProperty activatePassButton = new SimpleBooleanProperty(false);
     private final BooleanProperty activateFFButton = new SimpleBooleanProperty(false);
     private Stage primaryStage;
+    private String selectedGame;
+    private boolean spectatorMode;
+    private Pane infoPane;
+    private Button passButton;
+    private Button surrenderButton;
+    private int moveNumber;
 
     public GoGUI(Client client) {
         this.board = new Board(BOARD_SIZE);
@@ -53,13 +63,24 @@ public class GoGUI extends Application {
     }
 
     @Override
-    public void start(Stage primaryStage) throws IOException{
+    public void start(Stage primaryStage) throws IOException, InterruptedException {
 
         this.primaryStage = primaryStage;
         primaryStage.setTitle("Go Game");
         primaryStage.setResizable(false);
         Pane root = new Pane();
         root.setPadding(new Insets(10));
+        Alert gameTypeDialog = new Alert(Alert.AlertType.CONFIRMATION);
+        gameTypeDialog.setTitle("Choose Game Type");
+        gameTypeDialog.setHeaderText(null);
+        gameTypeDialog.setContentText("Select the game type:");
+
+        ButtonType humanButton = new ButtonType("Human");
+        ButtonType botButton = new ButtonType("Bot");
+        ButtonType loadButton = new ButtonType("Load Game");
+        ButtonType cancelButton = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
+
+
 
 
         // Board
@@ -74,7 +95,7 @@ public class GoGUI extends Application {
         separatorLine.setStyle("-fx-background-color: BLACK;");
 
         // Right side information
-        Pane infoPane = new Pane();
+        infoPane = new Pane();
         infoPane.setLayoutX((BOARD_SIZE) * TILE_SIZE);
         infoPane.setMinWidth(300);
         infoPane.setMinHeight(1000);
@@ -97,7 +118,7 @@ public class GoGUI extends Application {
 
 
         // Pass Button
-        Button passButton = new Button("Pass Turn");
+        passButton = new Button("Pass Turn");
         passButton.setLayoutY(260);
         passButton.setLayoutX(75);
         passButton.setOnAction(e -> {
@@ -110,7 +131,7 @@ public class GoGUI extends Application {
         passButton.disableProperty().bind(Bindings.not(activatePassButton));
 
         // FF Button
-        Button surrenderButton = new Button("Forfeit");
+        surrenderButton = new Button("Forfeit");
         surrenderButton.setLayoutY(290);
         surrenderButton.setLayoutX(75);
         surrenderButton.setOnAction(e -> {
@@ -142,17 +163,24 @@ public class GoGUI extends Application {
         primaryStage.setScene(scene);
 
         primaryStage.show();
-        if (askForHuman()) {
+        gameTypeDialog.getButtonTypes().setAll(humanButton, botButton, loadButton, cancelButton);
+
+        Optional<ButtonType> result = gameTypeDialog.showAndWait();
+
+        if (result.isPresent()) {
+            if (result.get() == humanButton) {
                 client.sendGameWithHuman();
-        } else {
-            if(askForBot()){
+            } else if (result.get() == botButton) {
                 client.sendGameWithBot();
-            }
-            else{
+            } else if (result.get() == loadButton) {
+                handleLoadGameButtonClick();
+            } else {
                 primaryStage.close();
             }
         }
-    }
+
+        }
+
 
     public void toggleActivatePassButton(){
         activatePassButton.set(!activatePassButton.get());
@@ -246,6 +274,100 @@ public class GoGUI extends Application {
         if(client.isMyTurn())
             client.sendPass();
     }
+    private void handleLoadGameButtonClick() throws IOException, InterruptedException {
+        // Request the list of available games from the server
+        client.askForAvailableGames();
+        while(!client.isGameListUpToDate()){
+            sleep(1);
+        }
+        // Display the list of available games in a dialog
+        ListView<String> gameList = new ListView<>();
+        gameList.getItems().addAll(client.getAvailableGames());
+
+        Alert alert = new Alert(Alert.AlertType.NONE);
+        alert.setTitle("Load Game");
+        client.askForAvailableGames();
+        alert.getDialogPane().setContent(gameList);
+        alert.getDialogPane().getButtonTypes().add(ButtonType.OK);
+        alert.showAndWait();
+
+        // Check if the user selected a game and load it
+        if (alert.getResult() == ButtonType.OK) {
+            resetGame();
+            updateStones();
+            updateInfo();
+            selectedGame = gameList.getSelectionModel().getSelectedItem();
+            if (selectedGame != null) {
+                spectatorMode = true;
+                client.loadMove(selectedGame,1);
+                switchToNavigationMode();
+            }
+        }
+    }
+
+    private void switchToNavigationMode() {
+        activatePassButton.unbind();
+        activateFFButton.unbind();
+        activatePassButton.set(false);
+        activateFFButton.set(false);
+        Button prevButton = new Button("←");
+        Button nextButton = new Button("→");
+
+        HBox navigationBox = new HBox(10, prevButton, nextButton);
+        navigationBox.setAlignment(Pos.CENTER);
+        navigationBox.setLayoutY(270);
+        navigationBox.setLayoutX(80);
+        infoPane.getChildren().removeAll(surrenderButton, passButton);
+        infoPane.getChildren().add(navigationBox);
+
+        // Set actions for navigation buttons
+        prevButton.setOnAction(e -> {
+            try {
+                handleNavigationButtonClick(false);
+            } catch (IOException ex) {
+                throw new RuntimeException(ex);
+            }
+            if(moveNumber<=0){
+                prevButton.setVisible(false);
+            }
+        });
+        nextButton.setOnAction(e -> {
+            try {
+                handleNavigationButtonClick(true);
+            } catch (IOException ex) {
+                throw new RuntimeException(ex);
+            }
+            if(moveNumber>=0){
+                prevButton.setVisible(true);
+            }
+        });
+    }
+
+    private void handleNavigationButtonClick(boolean forward) throws IOException {
+        if(forward){
+            moveNumber++;
+            client.loadMove(selectedGame,moveNumber);
+        }else{
+            client.deloadMove(selectedGame, moveNumber);
+            moveNumber--;
+
+        }
+    }
+
+    public void resetGame(){
+        moveNumber = 1;
+        blackPoints = 0;
+        whitePoints = 0;
+        resetBoard();
+    }
+
+    public void resetBoard() {
+        for(int j = board.getBoardSize() - 1; j >= 0; j--) {
+            for (int i = 0; i < board.getBoardSize(); i++) {
+                board.setTile(i, j, null);
+            }
+        }
+    }
 
     public void showWinnerDialog(StoneColor winner) {
         Platform.runLater(() -> {
@@ -303,30 +425,6 @@ public class GoGUI extends Application {
         }
     }
 
-//    private boolean askForNewGame() {
-//        Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "Play again?", ButtonType.YES, ButtonType.NO);
-//        alert.initOwner(primaryStage);
-//        alert.showAndWait();
-//        return alert.getResult() == ButtonType.YES;
-//    }
-//
-//    private void resetGame() {
-//        // Reset points
-//        blackPoints = 0;
-//        whitePoints = 0;
-//
-//        // Reset board
-//        BoardManager.resetBoard();
-//        updateStones();
-//
-//        // Reset player
-//        currentPlayer = StoneColor.BLACK;
-//        // Reset consecutive passes
-//        consecutivePasses = 0;
-//
-//        // Update
-//        updateInfo();
-//    }
 
     private void drawGoBoard() {
         GraphicsContext gc = canvas.getGraphicsContext2D();
@@ -408,8 +506,18 @@ public class GoGUI extends Application {
         }
     }
 
-    public void addStonesToBoard(Coordinates coordinates){
-        board.setTile(coordinates.getX(), coordinates.getY(), StoneFactory.createStoneInColor(currentPlayer));
+    public void addStoneToBoard(Coordinates coordinates){
+        board.setTile(coordinates.getX(), coordinates.getY(), new Stone(currentPlayer));
+    }
+    public void addStonesToBoard(List<Coordinates> listOfStones){
+        switchPlayer();
+        int points = listOfStones.size();
+        for(Coordinates coordinates: listOfStones)
+            board.setTile(coordinates.getX(), coordinates.getY(), new Stone(currentPlayer));
+        whitePoints -= points;
+        blackPoints -= points;
+
+        switchPlayer();
     }
 
     public void removeStonesFromBoard(List<Coordinates> listOfStones){
@@ -423,16 +531,31 @@ public class GoGUI extends Application {
             blackPoints += points;
     }
 
+    public void removeStoneFromBoard(Coordinates coordinates){
+        board.setTile(coordinates.getX(), coordinates.getY(), null);
+
+    }
 
 
     public void refreshGUIAfterSuccessfulMove(String message){
         Platform.runLater(() -> {
             Coordinates stoneToBeAdded = MessageDecoder.stonesToBeAddedFromStringToCoordinates(message);
             List<Coordinates> stonesToBeRemoved = MessageDecoder.stonesToBeRemovedFromStringToCoordinates(message);
-            addStonesToBoard(stoneToBeAdded);
+            addStoneToBoard(stoneToBeAdded);
             removeStonesFromBoard(stonesToBeRemoved);
             updateStones();
             switchPlayer();
+            updateInfo();
+        });
+    }
+    public void refreshGUIAfterReverseArrow(String notmessage) {
+        Platform.runLater(() -> {
+            String message = MessageDecoder.removeFirstWord(notmessage);
+            Coordinates stoneToBeRemoved= MessageDecoder.stonesToBeAddedFromStringToCoordinates(message);
+            List<Coordinates> stonesToBeAdded = MessageDecoder.stonesToBeRemovedFromStringToCoordinates(message);
+            addStonesToBoard(stonesToBeAdded);
+            removeStoneFromBoard(stoneToBeRemoved);
+            updateStones();
             updateInfo();
         });
     }
@@ -451,4 +574,6 @@ public class GoGUI extends Application {
     public void setGUITitle(StoneColor stoneColor){
         Platform.runLater(() -> this.primaryStage.setTitle("PLAYER " + stoneColor.toString()));
     }
+
+
 }

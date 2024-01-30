@@ -24,6 +24,8 @@ public class Server {
     private static boolean botGame = false;
     private static GameMaster gameMaster;
     private static int boardSize = 13;
+    private static String gameName;
+    private static boolean dbGame;
 
     public static void main(String[] args) {
         startServer();
@@ -33,7 +35,6 @@ public class Server {
         try {
             serverSocket = new ServerSocket(PORT);
             System.out.println("Server is running. Waiting for players to connect...");
-
             while (!humanGame) {
                 handleClient();
             }
@@ -58,7 +59,6 @@ public class Server {
             sendMessage(newPlayer.getOutputStream(), "PlayerID: " + playerId);
             newPlayer.setInitialMessagesSent();
         }
-
         // Start a new thread to handle messages from the current player
         new Thread(() -> handlePlayerMessages(newPlayer, playerId)).start();
 
@@ -79,6 +79,9 @@ public class Server {
                     broadcastMessageToAll("GameAccepted");
                     startBotGame();
                 }
+                if(Objects.equals(message, "DBGames")){
+                    startDBGames(player, message);
+                }
 
                 // Check if both players want to play with a human and start human game if it hasn't started yet
                 if (wantsHuman == 2 && !humanGame) {
@@ -93,6 +96,9 @@ public class Server {
                 if (botGame) {
                     handleBotGame(player, message);
                 }
+                if(dbGame){
+                    handleDBGame(player,message);
+                }
             }
         } catch (IOException | ClassNotFoundException e) {
             System.out.println("Player " + playerId + " disconnected.");
@@ -100,12 +106,30 @@ public class Server {
         }
     }
 
+    private static void handleDBGame(Player player, String message) throws IOException {
+        if(message.contains("LOAD")){
+            String selectedGame = MessageDecoder.extractSelectedGame(message);
+            int moveNumber = MessageDecoder.extractMoveNumber(message);
+//            System.out.println(DatabaseManager.getOneMove(selectedGame,moveNumber));
+            sendMessage(player.getOutputStream(), DatabaseManager.getOneMove(selectedGame,moveNumber));
+        }
+        if(message.contains("DLOAD")){
+            String selectedGame = MessageDecoder.extractSelectedGame(message);
+            int moveNumber = MessageDecoder.extractMoveNumber(message);
+//            System.out.println(DatabaseManager.getNegatedOneMove(selectedGame,moveNumber));
+            sendMessage(player.getOutputStream(), DatabaseManager.getNegatedOneMove(selectedGame,moveNumber));
+        }
+    }
+
+
     private static void handleHumanGame(Player player, String message) throws IOException, ClassNotFoundException {
         String output = gameMaster.makeAction(message);
         System.out.println(output);
         sendMessage(player.getOutputStream(), output);
         broadcastMessage(player, output);
-
+        if(output.contains("MOVE")|| output.contains("PASS")|| output.contains("ENDGAME")||output.contains("SURRENDER")){
+            DatabaseManager.saveMove(gameName, player.getStoneColor().toString(), output);
+        }
         // Close the server when the game finishes
         if (output.contains("ENDGAME") || output.contains("SURRENDER")) {
             System.exit(0);
@@ -116,7 +140,9 @@ public class Server {
         String output = gameMaster.makeAction(message);
         System.out.println(output);
         sendMessage(player.getOutputStream(), output);
-
+        if(output.contains("MOVE")|| output.contains("PASS")|| output.contains("ENDGAME")||output.contains("SURRENDER")){
+            DatabaseManager.saveMove(gameName, player.getStoneColor().toString(), output);
+        }
         if (output.equals("Unknown message type") && player.getStoneColor() == StoneColor.BLACK) {
             sendMessage(player.getOutputStream(), output);
         } else if(output.equals("Unknown message type") && player.getStoneColor() == StoneColor.WHITE) {
@@ -126,6 +152,7 @@ public class Server {
             } catch (InterruptedException ignored) {}
 
             String botOutput = gameMaster.getBot().finalBotMove(gameMaster);
+            DatabaseManager.saveMove(gameName, player.getStoneColor().toString(), botOutput);
             System.out.println("Bot move: " + botOutput);
             sendMessage(player.getOutputStream(), botOutput);
         }
@@ -182,8 +209,10 @@ public class Server {
 
         System.out.println("Game with humans is starting...");
         humanGame = true;
-        serverSocket.close();
         gameMaster = new GameMaster(boardSize);
+        DatabaseManager.initializeDatabase();
+        gameName = DatabaseManager.getCurrentGameName();
+        System.out.println(gameName);
         // Choose a random color for the players
         StoneColor firstPlayerColor = (new Random().nextBoolean()) ? StoneColor.BLACK : StoneColor.WHITE;
         StoneColor secondPlayerColor = (firstPlayerColor == StoneColor.BLACK) ? StoneColor.WHITE : StoneColor.BLACK;
@@ -198,8 +227,10 @@ public class Server {
 
         System.out.println("Game with bot is starting...");
         botGame = true;
-        serverSocket.close();
         gameMaster = new GameMaster(boardSize);
+        DatabaseManager.initializeDatabase();
+        gameName = DatabaseManager.getCurrentGameName();
+        System.out.println(gameName);
         // Choose a random color for the players
         StoneColor firstPlayerColor = (new Random().nextBoolean()) ? StoneColor.BLACK : StoneColor.WHITE;
         StoneColor secondPlayerColor = (firstPlayerColor == StoneColor.BLACK) ? StoneColor.WHITE : StoneColor.BLACK;
@@ -207,5 +238,11 @@ public class Server {
         sendMessage(players.get(0).getOutputStream(), firstPlayerColor.toString());
         gameMaster.setBot(secondPlayerColor, boardSize);
 
+    }
+    private static void startDBGames(Player player, String message) throws IOException {
+        System.out.println("Somebody is viewing previous games...");
+        dbGame = true;
+        String allGames = DatabaseManager.getAllGames();
+        sendMessage(player.getOutputStream(),"GAMES: " + allGames);
     }
 }

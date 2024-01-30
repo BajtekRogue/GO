@@ -4,6 +4,7 @@ import Factories.CoordinatesFactory;
 import GameObjects.Coordinates;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class MessageDecoder {
@@ -85,5 +86,43 @@ public class MessageDecoder {
             }
         }
         return 0;
+    }
+    public static String removeFirstWord(String input) {
+        return input.trim().replaceFirst("\\S+\\s*", "");
+    }
+    public static ArrayList<String> parseGames(String input) {
+        ArrayList<String> gamesList = new ArrayList<>();
+
+        if (input.startsWith("GAMES: ")) {
+            String gamesString = input.substring("GAMES: ".length());
+
+            String[] gamesArray = gamesString.split(" ");
+
+            gamesList.addAll(Arrays.asList(gamesArray));
+        }
+
+        return gamesList;
+    }
+
+    public static String extractSelectedGame(String input) {
+        String[] parts = input.split(" ");
+        if (parts.length >= 2) {
+            return parts[1];
+        }
+
+        return null;
+    }
+
+    public static int extractMoveNumber(String input) {
+        String[] parts = input.split(" ");
+        if (parts.length >= 3) {
+            try {
+                return Integer.parseInt(parts[2]);
+            } catch (NumberFormatException e) {
+                e.printStackTrace();
+            }
+        }
+
+        return -1;
     }
 }
