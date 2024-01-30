@@ -23,7 +23,7 @@ public class Server {
     private static boolean humanGame = false;
     private static boolean botGame = false;
     private static GameMaster gameMaster;
-    private static int boardSize = 13;
+    private static int boardSize = 0;
     private static String gameName;
     private static boolean dbGame;
 
@@ -56,7 +56,7 @@ public class Server {
 
         if (!newPlayer.areInitialMessagesSent()) {
             sendMessage(newPlayer.getOutputStream(), "You have successfully connected to the server as player" + playerId);
-            sendMessage(newPlayer.getOutputStream(), "PlayerID: " + playerId);
+            sendMessage(newPlayer.getOutputStream(), "PlayerID: " + playerId + " " + boardSize);
             newPlayer.setInitialMessagesSent();
         }
         // Start a new thread to handle messages from the current player
@@ -72,10 +72,16 @@ public class Server {
 
                 System.out.println("Received message from Player " + playerId + ": " + message);
 
-                if (Objects.equals(message, "Human")) {
+                if (message.contains("Human")) {
+                    if(playerId==1) {
+                        boardSize = MessageDecoder.getBoardSize(message);
+                    }
                     wantsHuman++;
+
                 }
-                if (Objects.equals(message, "Bot")) {
+
+                if (message.contains("Bot")) {
+                    boardSize = MessageDecoder.getBoardSize(message);
                     broadcastMessageToAll("GameAccepted");
                     startBotGame();
                 }
@@ -213,7 +219,7 @@ public class Server {
         System.out.println("Game with humans is starting...");
         humanGame = true;
         gameMaster = new GameMaster(boardSize);
-        DatabaseManager.initializeDatabase();
+        DatabaseManager.initializeDatabase(boardSize);
         gameName = DatabaseManager.getCurrentGameName();
         System.out.println(gameName);
         // Choose a random color for the players
@@ -231,7 +237,7 @@ public class Server {
         System.out.println("Game with bot is starting...");
         botGame = true;
         gameMaster = new GameMaster(boardSize);
-        DatabaseManager.initializeDatabase();
+        DatabaseManager.initializeDatabase(boardSize);
         gameName = DatabaseManager.getCurrentGameName();
         System.out.println(gameName);
         // Choose a random color for the players

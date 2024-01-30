@@ -29,7 +29,8 @@ public class MessageDecoder {
                 int x = Integer.parseInt(tokens[xIndex]);
                 int y = Integer.parseInt(tokens[yIndex]);
                 return CoordinatesFactory.createCoordinates(x, y);
-            } catch (NumberFormatException | ArrayIndexOutOfBoundsException ignored) {}
+            } catch (NumberFormatException | ArrayIndexOutOfBoundsException ignored) {
+            }
         }
 
         return CoordinatesFactory.createCoordinates(-1, -1);
@@ -86,9 +87,11 @@ public class MessageDecoder {
         }
         return 0;
     }
+
     public static String removeFirstWord(String input) {
         return input.trim().replaceFirst("\\S+\\s*", "");
     }
+
     public static ArrayList<String> parseGames(String input) {
         ArrayList<String> gamesList = new ArrayList<>();
 
@@ -117,9 +120,49 @@ public class MessageDecoder {
         if (parts.length >= 3) {
             try {
                 return Integer.parseInt(parts[2]);
-            } catch (NumberFormatException ignored) {}
+            } catch (NumberFormatException ignored) {
+            }
         }
 
+        return -1;
+    }
+
+    public static int extractBoardSize(String input) {
+
+        String[] parts = input.split(" ");
+
+        if (parts.length >= 3) {
+            try {
+                System.out.println(parts[parts.length - 1]);
+                return Integer.parseInt(parts[parts.length - 1]);
+
+            } catch (NumberFormatException e) {
+                e.printStackTrace();
+            }
+        }
+
+        return -2;
+    }
+
+    public static int getBoardSize(String input) {
+        String[] parts = input.split(" ");
+        if (parts.length == 2) {
+            try {
+                return Integer.parseInt(parts[1]);
+            } catch (NumberFormatException ignored) {
+            }
+        }
+        return -1;
+    }
+
+    public static int parseGameSize(String game) {
+        String[] parts = game.split("_");
+
+            try {
+                return Integer.parseInt(parts[parts.length-1]);
+            } catch (NumberFormatException ignored) {
+
+        }
         return -1;
     }
 }

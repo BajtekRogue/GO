@@ -10,10 +10,10 @@ public class DatabaseManager {
     private static final SimpleDateFormat dateFormatter = new SimpleDateFormat(DATE_FORMAT);
     private static final String CREATE_TABLE_QUERY = "CREATE TABLE IF NOT EXISTS %s (id INTEGER PRIMARY KEY AUTOINCREMENT, player_color TEXT, move TEXT)";
     private static String currentGameName;
-    public static void initializeDatabase() {
+    public static void initializeDatabase(int boardSize) {
         try (Connection connection = DriverManager.getConnection(DB_URL);
              Statement statement = connection.createStatement()) {
-            currentGameName = getCurrentTableName();
+            currentGameName = getCurrentTableName(boardSize);
             String createTableQuery = String.format(CREATE_TABLE_QUERY, currentGameName);
             statement.executeUpdate(createTableQuery);
         } catch (SQLException e) {
@@ -77,8 +77,8 @@ public class DatabaseManager {
         }
     }
     public static String getCurrentGameName(){return currentGameName;}
-    private static String getCurrentTableName() {
-        return "game_" + dateFormatter.format(new Date());
+    private static String getCurrentTableName(int boardSize) {
+        return "game_" + dateFormatter.format(new Date()) + "_" + boardSize;
     }
 
     public static String getNegatedOneMove(String selectedGame, int moveNumber) {

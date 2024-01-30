@@ -21,7 +21,6 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
-import javafx.stage.StageStyle;
 
 import java.io.IOException;
 import java.util.List;
@@ -31,7 +30,7 @@ import static java.lang.Thread.sleep;
 
 public class GoGUI extends Application {
 
-    private static final int BOARD_SIZE = 13;
+    private static int BOARD_SIZE = 0;
     private static final int TILE_SIZE = 40;
     private static final double STONE_SIZE = 15;
     private static final double DOT_SIZE = 5;
@@ -45,7 +44,7 @@ public class GoGUI extends Application {
     private Canvas canvas;
     private Button[][] buttons;
     private final Client client;
-    private final Board board;
+    private Board board;
     private final BooleanProperty activatePassButton = new SimpleBooleanProperty(false);
     private final BooleanProperty activateFFButton = new SimpleBooleanProperty(false);
     private Stage primaryStage;
@@ -55,6 +54,8 @@ public class GoGUI extends Application {
     private Button passButton;
     private Button surrenderButton;
     private int moveNumber;
+    private Pane root;
+    private boolean loadGame;
 
     public GoGUI(Client client) {
         this.board = new Board(BOARD_SIZE);
@@ -74,112 +75,157 @@ public class GoGUI extends Application {
         gameTypeDialog.setTitle("Choose Game Type");
         gameTypeDialog.setHeaderText(null);
         gameTypeDialog.setContentText("Select the game type:");
-
+        this.root = root;
         ButtonType humanButton = new ButtonType("Human");
         ButtonType botButton = new ButtonType("Bot");
         ButtonType loadButton = new ButtonType("Load Game");
         ButtonType cancelButton = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
+        if(client.isFirstPlayer()) {
+            gameTypeDialog.getButtonTypes().setAll(humanButton, botButton, loadButton, cancelButton);
+            Optional<ButtonType> result = gameTypeDialog.showAndWait();
 
-
-
-
-        // Board
-        canvas = new Canvas((BOARD_SIZE) * TILE_SIZE, (BOARD_SIZE + 1) * TILE_SIZE);
-        root.getChildren().add(canvas);
-
-        // Separator Line
-        Pane separatorLine = new Pane();
-        separatorLine.setLayoutX((BOARD_SIZE) * TILE_SIZE-3);
-        separatorLine.setMinWidth(3);
-        separatorLine.setMinHeight(1000);
-        separatorLine.setStyle("-fx-background-color: BLACK;");
-
-        // Right side information
-        infoPane = new Pane();
-        infoPane.setLayoutX((BOARD_SIZE) * TILE_SIZE);
-        infoPane.setMinWidth(300);
-        infoPane.setMinHeight(1000);
-        infoPane.setStyle("-fx-background-color: rgb(196,161,118);");
-
-        // Player Turn Label
-        turnLabel = new Label("Player Turn: BLACK");
-        turnLabel.setLayoutY(200);
-        turnLabel.setLayoutX(75);
-        turnLabel.setStyle("-fx-font-size: 50;");
-        turnLabel.setStyle("-fx-font-weight: bold;");
-        turnLabel.setTextFill(Color.BLACK);
-
-        pointsLabel = new Label("Black Points: 0   White Points: 0");
-        pointsLabel.setLayoutY(230);
-        pointsLabel.setLayoutX(75);
-        pointsLabel.setStyle("-fx-font-size: 40;");
-        pointsLabel.setStyle("-fx-font-weight: bold;");
-        pointsLabel.setTextFill(Color.BLACK);
-
-
-        // Pass Button
-        passButton = new Button("Pass Turn");
-        passButton.setLayoutY(260);
-        passButton.setLayoutX(75);
-        passButton.setOnAction(e -> {
-            try {
-                handlePassButtonClick();
-            } catch (IOException ex) {
-                throw new RuntimeException(ex);
+            if (result.isPresent()) {
+                if (result.get() == humanButton) {
+                    client.sendGameWithHuman(showSizeSelectionDialog());
+                } else if (result.get() == botButton) {
+                    client.sendGameWithBot(showSizeSelectionDialog());
+                } else if (result.get() == loadButton) {
+                    handleLoadGameButtonClick();
+                } else {
+                    primaryStage.close();
+                }
             }
-        });
-        passButton.disableProperty().bind(Bindings.not(activatePassButton));
 
-        // FF Button
-        surrenderButton = new Button("Forfeit");
-        surrenderButton.setLayoutY(290);
-        surrenderButton.setLayoutX(75);
-        surrenderButton.setOnAction(e -> {
-            try {
-                handleSurrenderButtonClick();
-            } catch (IOException ex) {
-                throw new RuntimeException(ex);
-            }
-        });
-        surrenderButton.disableProperty().bind(Bindings.not(activateFFButton));
-
-        infoPane.getChildren().addAll(turnLabel, pointsLabel, passButton, surrenderButton);
-        root.getChildren().addAll(separatorLine, infoPane);
-
-        // Buttons
-        buttons = new Button[BOARD_SIZE][BOARD_SIZE];
-        for (int y = BOARD_SIZE - 1; y >= 0; y--) {
-            for (int x = 0; x < BOARD_SIZE; x++) {
-                Button button = createButton(x, y);
-                buttons[x][y] = button;
-                root.getChildren().add(button);
-            }
+        }else{
+            client.sendGameWithHuman(BOARD_SIZE);
         }
-
-
-        drawGoBoard();
-
-        Scene scene = new Scene(root, (BOARD_SIZE + 1) * TILE_SIZE + 220, BOARD_SIZE * TILE_SIZE);
-        primaryStage.setScene(scene);
-
-        primaryStage.show();
-        gameTypeDialog.getButtonTypes().setAll(humanButton, botButton, loadButton, cancelButton);
-
-        Optional<ButtonType> result = gameTypeDialog.showAndWait();
-
-        if (result.isPresent()) {
-            if (result.get() == humanButton) {
-                client.sendGameWithHuman();
-            } else if (result.get() == botButton) {
-                client.sendGameWithBot();
-            } else if (result.get() == loadButton) {
-                handleLoadGameButtonClick();
-            } else {
-                primaryStage.close();
+        if(!client.isFirstPlayer()) {
+            while (!client.hasBoardSize()) {
+                sleep(1);
             }
+
+        }
+        board = new Board(BOARD_SIZE);
+
+        System.out.println("PO " + BOARD_SIZE);
+
+        if(!loadGame) {
+            continueInitializingGUI();
         }
 
         }
+        private void continueInitializingGUI(){
+            // Board
+            canvas = new Canvas((BOARD_SIZE) * TILE_SIZE, (BOARD_SIZE + 1) * TILE_SIZE);
+            root.getChildren().add(canvas);
+
+            // Separator Line
+            Pane separatorLine = new Pane();
+            separatorLine.setLayoutX((BOARD_SIZE) * TILE_SIZE-3);
+            separatorLine.setMinWidth(3);
+            separatorLine.setMinHeight(1000);
+            separatorLine.setStyle("-fx-background-color: BLACK;");
+
+            // Right side information
+            infoPane = new Pane();
+            infoPane.setLayoutX((BOARD_SIZE) * TILE_SIZE);
+            infoPane.setMinWidth(300);
+            infoPane.setMinHeight(1000);
+            infoPane.setStyle("-fx-background-color: rgb(196,161,118);");
+
+            // Player Turn Label
+            turnLabel = new Label("Player Turn: BLACK");
+            turnLabel.setLayoutY(200);
+            turnLabel.setLayoutX(75);
+            turnLabel.setStyle("-fx-font-size: 50;");
+            turnLabel.setStyle("-fx-font-weight: bold;");
+            turnLabel.setTextFill(Color.BLACK);
+
+            pointsLabel = new Label("Black Points: 0   White Points: 0");
+            pointsLabel.setLayoutY(230);
+            pointsLabel.setLayoutX(75);
+            pointsLabel.setStyle("-fx-font-size: 40;");
+            pointsLabel.setStyle("-fx-font-weight: bold;");
+            pointsLabel.setTextFill(Color.BLACK);
+
+
+            // Pass Button
+            passButton = new Button("Pass Turn");
+            passButton.setLayoutY(260);
+            passButton.setLayoutX(75);
+            passButton.setOnAction(e -> {
+                try {
+                    handlePassButtonClick();
+                } catch (IOException ex) {
+                    throw new RuntimeException(ex);
+                }
+            });
+            passButton.disableProperty().bind(Bindings.not(activatePassButton));
+
+            // FF Button
+            surrenderButton = new Button("Forfeit");
+            surrenderButton.setLayoutY(290);
+            surrenderButton.setLayoutX(75);
+            surrenderButton.setOnAction(e -> {
+                try {
+                    handleSurrenderButtonClick();
+                } catch (IOException ex) {
+                    throw new RuntimeException(ex);
+                }
+            });
+            surrenderButton.disableProperty().bind(Bindings.not(activateFFButton));
+
+            infoPane.getChildren().addAll(turnLabel, pointsLabel, passButton, surrenderButton);
+            root.getChildren().addAll(separatorLine, infoPane);
+
+            // Buttons
+            buttons = new Button[BOARD_SIZE][BOARD_SIZE];
+            for (int y = BOARD_SIZE - 1; y >= 0; y--) {
+                for (int x = 0; x < BOARD_SIZE; x++) {
+                    Button button = createButton(x, y);
+                    buttons[x][y] = button;
+                    root.getChildren().add(button);
+                }
+            }
+
+
+            drawGoBoard();
+
+            Scene scene = new Scene(root, (BOARD_SIZE + 1) * TILE_SIZE + 220, BOARD_SIZE * TILE_SIZE);
+            primaryStage.setScene(scene);
+
+            primaryStage.show();
+
+        }
+    private int showSizeSelectionDialog() {
+        Alert sizeDialog = new Alert(Alert.AlertType.CONFIRMATION);
+        sizeDialog.setTitle("Choose Board Size");
+        sizeDialog.setHeaderText(null);
+        sizeDialog.setContentText("Select the board size:");
+
+        ButtonType size9x9 = new ButtonType("9x9");
+        ButtonType size13x13 = new ButtonType("13x13");
+        ButtonType size19x19 = new ButtonType("19x19");
+        ButtonType cancelButton = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
+
+        sizeDialog.getButtonTypes().setAll(size9x9, size13x13, size19x19, cancelButton);
+
+        Optional<ButtonType> sizeResult = sizeDialog.showAndWait();
+
+        if (sizeResult.isPresent()) {
+            if (sizeResult.get() == size9x9) {
+                BOARD_SIZE = 9;
+                return 9;
+            } else if (sizeResult.get() == size13x13) {
+                BOARD_SIZE = 13;
+                return 13;
+            } else if (sizeResult.get() == size19x19) {
+                BOARD_SIZE = 19;
+                return 19;
+            }
+        }
+        return -1;
+    }
 
 
     public void toggleActivatePassButton(){
@@ -189,32 +235,6 @@ public class GoGUI extends Application {
     public void toggleFFPassButton(){
         activateFFButton.set(!activateFFButton.get());
     }
-
-//    private boolean askForBot() {
-//        Alert alert = new Alert(Alert.AlertType.CONFIRMATION,
-//                "Do you want to play with a bot?",
-//                ButtonType.YES, ButtonType.NO);
-//        alert.initStyle(StageStyle.UTILITY);
-//        alert.setHeaderText(null);
-//        alert.setTitle("Game with bot?");
-//        alert.initOwner(primaryStage);
-//        alert.showAndWait();
-//
-//        return alert.getResult() == ButtonType.YES;
-//    }
-//
-//    private boolean askForHuman() {
-//        Alert alert = new Alert(Alert.AlertType.CONFIRMATION,
-//                "Do you want to play with a human?",
-//                ButtonType.YES, ButtonType.NO);
-//        alert.initStyle(StageStyle.UTILITY);
-//        alert.setHeaderText(null);
-//        alert.setTitle("Game with human?");
-//        alert.initOwner(primaryStage);
-//        alert.showAndWait();
-//
-//        return alert.getResult() == ButtonType.YES;
-//    }
 
     private void updateInfo() {
         turnLabel.setText("Player Turn: " + currentPlayer.toString());
@@ -275,6 +295,7 @@ public class GoGUI extends Application {
             client.sendPass();
     }
     private void handleLoadGameButtonClick() throws IOException, InterruptedException {
+        loadGame = true;
         // Request the list of available games from the server
         client.askForAvailableGames();
         while(!client.isGameListUpToDate()){
@@ -293,10 +314,13 @@ public class GoGUI extends Application {
 
         // Check if the user selected a game and load it
         if (alert.getResult() == ButtonType.OK) {
+            selectedGame = gameList.getSelectionModel().getSelectedItem();
+            client.requestLoadedGameBoardSize(selectedGame);
+            board = new Board(BOARD_SIZE);
+            continueInitializingGUI();
             resetGame();
             updateStones();
             updateInfo();
-            selectedGame = gameList.getSelectionModel().getSelectedItem();
             if (selectedGame != null) {
                 spectatorMode = true;
                 client.loadMove(selectedGame,1);
@@ -578,4 +602,7 @@ public class GoGUI extends Application {
     }
 
 
+    public void setBoardSize(int boardSize) {
+        BOARD_SIZE = boardSize;
+    }
 }

@@ -29,6 +29,7 @@ public class Client extends Application {
     private final Map<String, Command> commandMap = new HashMap<>();
     private List<String> availableGames;
     private Boolean updatedGames = false;
+    private boolean hasBoardSize = false;
 
     public Client() {
         commandMap.put("GameAccepted", new GameAcceptedCommand());
@@ -67,7 +68,7 @@ public class Client extends Application {
     public boolean isPlayerReady() {
         return isPlayerReady;
     }
-
+    public boolean isFirstPlayer(){return firstPlayer;}
     public void setPlayerReady() {
         isPlayerReady = true;
     }
@@ -119,7 +120,10 @@ public class Client extends Application {
             while (true) {
                 String message = receiveMessage();
                 System.out.println("Received message: " + message);
-
+                if(!firstPlayer && message.contains("PlayerID: 2")) {
+                    hasBoardSize = true;
+                    goGUI.setBoardSize(MessageDecoder.extractBoardSize(message));
+                }
                 for (Map.Entry<String, Command> entry : commandMap.entrySet()) {
                     if (message.contains(entry.getKey())) {
                         entry.getValue().execute(this, message);
@@ -148,11 +152,11 @@ public class Client extends Application {
     public void sendPass() throws IOException {
         sendMessage("Pass");
     }
-    public void sendGameWithHuman() throws IOException {
-        sendMessage("Human");
+    public void sendGameWithHuman(int boardSize) throws IOException {
+        sendMessage("Human " + boardSize);
     }
-    public void sendGameWithBot() throws IOException {
-        sendMessage("Bot");
+    public void sendGameWithBot(int boardSize) throws IOException {
+        sendMessage("Bot " + boardSize);
     }
 //    public void sendLoad() throws IOException {
 //        sendMessage("Load");
@@ -173,6 +177,7 @@ public class Client extends Application {
     public boolean isGameListUpToDate(){
         return updatedGames;
     }
+    public boolean hasBoardSize(){return hasBoardSize;}
     public void setAvailableGames(List<String> games){
         availableGames = games;
     }
@@ -187,8 +192,11 @@ public class Client extends Application {
     public void deloadMove(String selectedGame, int moveNumber) throws IOException {
         sendMessage("DLOAD " + selectedGame + " " + moveNumber);
     }
-
+    public void requestLoadedGameBoardSize(String game){
+        goGUI.setBoardSize(MessageDecoder.parseGameSize(game));
+    }
     public List<String> requestAvailableGames(String games) {
         return MessageDecoder.parseGames(games);
     }
+
 }
