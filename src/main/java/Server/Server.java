@@ -79,7 +79,7 @@ public class Server {
                     broadcastMessageToAll("GameAccepted");
                     startBotGame();
                 }
-                if(Objects.equals(message, "DBGames")){
+                if (Objects.equals(message, "DBGames")) {
                     startDBGames(player, message);
                 }
 
@@ -96,8 +96,8 @@ public class Server {
                 if (botGame) {
                     handleBotGame(player, message);
                 }
-                if(dbGame){
-                    handleDBGame(player,message);
+                if (dbGame) {
+                    handleDBGame(player, message);
                 }
             }
         } catch (IOException | ClassNotFoundException e) {
@@ -107,17 +107,17 @@ public class Server {
     }
 
     private static void handleDBGame(Player player, String message) throws IOException {
-        if(message.contains("LOAD")){
+        if (message.contains("LOAD")) {
             String selectedGame = MessageDecoder.extractSelectedGame(message);
             int moveNumber = MessageDecoder.extractMoveNumber(message);
 //            System.out.println(DatabaseManager.getOneMove(selectedGame,moveNumber));
-            sendMessage(player.getOutputStream(), DatabaseManager.getOneMove(selectedGame,moveNumber));
+            sendMessage(player.getOutputStream(), DatabaseManager.getOneMove(selectedGame, moveNumber));
         }
-        if(message.contains("DLOAD")){
+        if (message.contains("DLOAD")) {
             String selectedGame = MessageDecoder.extractSelectedGame(message);
             int moveNumber = MessageDecoder.extractMoveNumber(message);
 //            System.out.println(DatabaseManager.getNegatedOneMove(selectedGame,moveNumber));
-            sendMessage(player.getOutputStream(), DatabaseManager.getNegatedOneMove(selectedGame,moveNumber));
+            sendMessage(player.getOutputStream(), DatabaseManager.getNegatedOneMove(selectedGame, moveNumber));
         }
     }
 
@@ -127,7 +127,7 @@ public class Server {
         System.out.println(output);
         sendMessage(player.getOutputStream(), output);
         broadcastMessage(player, output);
-        if(output.contains("MOVE")|| output.contains("PASS")|| output.contains("ENDGAME")||output.contains("SURRENDER")){
+        if (output.contains("MOVE") || output.contains("PASS") || output.contains("ENDGAME") || output.contains("SURRENDER")) {
             DatabaseManager.saveMove(gameName, player.getStoneColor().toString(), output);
         }
         // Close the server when the game finishes
@@ -140,30 +140,32 @@ public class Server {
         String output = gameMaster.makeAction(message);
         System.out.println(output);
         sendMessage(player.getOutputStream(), output);
-        if(output.contains("MOVE")|| output.contains("PASS")|| output.contains("ENDGAME")||output.contains("SURRENDER")){
+        if (output.contains("MOVE") || output.contains("PASS") || output.contains("ENDGAME") || output.contains("SURRENDER")) {
             DatabaseManager.saveMove(gameName, player.getStoneColor().toString(), output);
         }
         if (output.equals("Unknown message type") && player.getStoneColor() == StoneColor.BLACK) {
             sendMessage(player.getOutputStream(), output);
-        } else if(output.equals("Unknown message type") && player.getStoneColor() == StoneColor.WHITE) {
+        } else if (output.equals("Unknown message type") && player.getStoneColor() == StoneColor.WHITE) {
             try {
                 Thread.sleep(1000);
                 System.out.println("Waiting for bot to make move");
-            } catch (InterruptedException ignored) {}
+            } catch (InterruptedException ignored) {
+            }
 
             String botOutput = gameMaster.getBot().finalBotMove(gameMaster);
             DatabaseManager.saveMove(gameName, player.getStoneColor().toString(), botOutput);
             System.out.println("Bot move: " + botOutput);
             sendMessage(player.getOutputStream(), botOutput);
-        }
-        else{
+        } else {
             try {
                 Thread.sleep(1000);
                 System.out.println("Waiting for bot to make move");
-            } catch (InterruptedException ignored) {}
+            } catch (InterruptedException ignored) {
+            }
 
-            if(output.contains("OK") || output.contains("PASS")){
+            if (output.contains("OK") || output.contains("PASS")) {
                 String botOutput = gameMaster.getBot().finalBotMove(gameMaster);
+                DatabaseManager.saveMove(gameName, gameMaster.getBot().getBotColor().toString(), botOutput);
                 System.out.println("Bot move: " + botOutput);
                 sendMessage(player.getOutputStream(), botOutput);
             }
@@ -174,6 +176,7 @@ public class Server {
             System.exit(0);
         }
     }
+
     private static void broadcastMessage(Player sender, String message) {
         for (Player player : players) {
             try {
@@ -239,10 +242,11 @@ public class Server {
         gameMaster.setBot(secondPlayerColor, boardSize);
 
     }
+
     private static void startDBGames(Player player, String message) throws IOException {
         System.out.println("Somebody is viewing previous games...");
         dbGame = true;
         String allGames = DatabaseManager.getAllGames();
-        sendMessage(player.getOutputStream(),"GAMES: " + allGames);
+        sendMessage(player.getOutputStream(), "GAMES: " + allGames);
     }
 }

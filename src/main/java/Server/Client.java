@@ -26,7 +26,7 @@ public class Client extends Application {
     private boolean myTurn = false;
     private StoneColor playerColor;
     private GoGUI goGUI;
-    private Map<String, Command> commandMap = new HashMap<>();
+    private final Map<String, Command> commandMap = new HashMap<>();
     private List<String> availableGames;
     private Boolean updatedGames = false;
 
@@ -97,10 +97,8 @@ public class Client extends Application {
                 Platform.runLater(() -> {
                     try {
                         goGUI.start(new Stage());
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
+                    } catch (IOException | InterruptedException e) {
+                        System.out.println("Error while starting GUI");
                     }
                     guiLatch.countDown();
                 });
@@ -156,9 +154,9 @@ public class Client extends Application {
     public void sendGameWithBot() throws IOException {
         sendMessage("Bot");
     }
-    public void sendLoad() throws IOException {
-        sendMessage("Load");
-    }
+//    public void sendLoad() throws IOException {
+//        sendMessage("Load");
+//    }
 
     @Override
     public void start(Stage stage){

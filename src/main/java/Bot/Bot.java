@@ -7,16 +7,18 @@ import Server.GameMaster;
 
 public class Bot {
 
-    private static StoneColor botColor;
-    private final int boardSize;
+    private final StoneColor botColor;
     private final MoveStrategy moveStrategy;
 
     public Bot(StoneColor botColor, int boardSize) {
         this.botColor = botColor;
-        this.boardSize = boardSize;
         //select MoveStrategy here
         //this.moveStrategy = new RandomMoveStrategy(boardSize);
         this.moveStrategy = new MyMoveStrategy(boardSize, botColor);
+    }
+
+    public StoneColor getBotColor() {
+        return botColor;
     }
 
     public Coordinates makeMove() {

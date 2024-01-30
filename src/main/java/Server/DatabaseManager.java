@@ -17,7 +17,7 @@ public class DatabaseManager {
             String createTableQuery = String.format(CREATE_TABLE_QUERY, currentGameName);
             statement.executeUpdate(createTableQuery);
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.out.println("SQL error");
         }
     }
 
@@ -28,7 +28,7 @@ public class DatabaseManager {
             String insertMoveQuery = String.format("INSERT INTO %s (player_color, move) VALUES ('%s', '%s')", gameName, playerColor, move);
             statement.executeUpdate(insertMoveQuery);
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.out.println("SQL error");
         }
     }
     public static String getAllGames() {
@@ -45,21 +45,21 @@ public class DatabaseManager {
 
             return gamesStringBuilder.toString();
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.out.println("SQL error");
             return null;
         }
     }
-    public static ResultSet getAllMoves() {
-        try (Connection connection = DriverManager.getConnection(DB_URL);
-             Statement statement = connection.createStatement()) {
-            String tableName = getCurrentTableName();
-            String selectMovesQuery = "SELECT player_color, move FROM " + tableName + " ORDER BY id";
-            return statement.executeQuery(selectMovesQuery);
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
+//    public static ResultSet getAllMoves() {
+//        try (Connection connection = DriverManager.getConnection(DB_URL);
+//             Statement statement = connection.createStatement()) {
+//            String tableName = getCurrentTableName();
+//            String selectMovesQuery = "SELECT player_color, move FROM " + tableName + " ORDER BY id";
+//            return statement.executeQuery(selectMovesQuery);
+//        } catch (SQLException e) {
+//            System.out.println("SQL error");
+//            return null;
+//        }
+//    }
     public static String getOneMove(String gameName, int moveID) {
         try (Connection connection = DriverManager.getConnection(DB_URL);
              Statement statement = connection.createStatement()) {
@@ -69,10 +69,10 @@ public class DatabaseManager {
             if (resultSet.next()) {
                 return resultSet.getString("move");
             } else {
-                return null;  // Brak wyników
+                return null;  // No results
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.out.println("SQL error");
             return null;
         }
     }

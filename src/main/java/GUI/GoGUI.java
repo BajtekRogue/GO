@@ -190,31 +190,31 @@ public class GoGUI extends Application {
         activateFFButton.set(!activateFFButton.get());
     }
 
-    private boolean askForBot() {
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION,
-                "Do you want to play with a bot?",
-                ButtonType.YES, ButtonType.NO);
-        alert.initStyle(StageStyle.UTILITY);
-        alert.setHeaderText(null);
-        alert.setTitle("Game with bot?");
-        alert.initOwner(primaryStage);
-        alert.showAndWait();
-
-        return alert.getResult() == ButtonType.YES;
-    }
-
-    private boolean askForHuman() {
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION,
-                "Do you want to play with a human?",
-                ButtonType.YES, ButtonType.NO);
-        alert.initStyle(StageStyle.UTILITY);
-        alert.setHeaderText(null);
-        alert.setTitle("Game with human?");
-        alert.initOwner(primaryStage);
-        alert.showAndWait();
-
-        return alert.getResult() == ButtonType.YES;
-    }
+//    private boolean askForBot() {
+//        Alert alert = new Alert(Alert.AlertType.CONFIRMATION,
+//                "Do you want to play with a bot?",
+//                ButtonType.YES, ButtonType.NO);
+//        alert.initStyle(StageStyle.UTILITY);
+//        alert.setHeaderText(null);
+//        alert.setTitle("Game with bot?");
+//        alert.initOwner(primaryStage);
+//        alert.showAndWait();
+//
+//        return alert.getResult() == ButtonType.YES;
+//    }
+//
+//    private boolean askForHuman() {
+//        Alert alert = new Alert(Alert.AlertType.CONFIRMATION,
+//                "Do you want to play with a human?",
+//                ButtonType.YES, ButtonType.NO);
+//        alert.initStyle(StageStyle.UTILITY);
+//        alert.setHeaderText(null);
+//        alert.setTitle("Game with human?");
+//        alert.initOwner(primaryStage);
+//        alert.showAndWait();
+//
+//        return alert.getResult() == ButtonType.YES;
+//    }
 
     private void updateInfo() {
         turnLabel.setText("Player Turn: " + currentPlayer.toString());
@@ -532,7 +532,9 @@ public class GoGUI extends Application {
     }
 
     public void removeStoneFromBoard(Coordinates coordinates){
-        board.setTile(coordinates.getX(), coordinates.getY(), null);
+        try {
+            board.setTile(coordinates.getX(), coordinates.getY(), null);
+        }catch (ArrayIndexOutOfBoundsException ignored){}
 
     }
 

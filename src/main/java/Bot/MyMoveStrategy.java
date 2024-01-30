@@ -14,7 +14,7 @@ public class MyMoveStrategy implements MoveStrategy {
     private final StoneColor botColor;
     private boolean hasTarget = false;
     private Coordinates target;
-    private boolean visited[][];
+    private final boolean[][] visited;
     private List<Coordinates> historyOfTargets = new ArrayList<>();
 
     public MyMoveStrategy(int boardSize, StoneColor botColor) {
@@ -102,7 +102,7 @@ public class MyMoveStrategy implements MoveStrategy {
             }
         }
 
-        if (coordinatesList.size() == 0) {
+        if (coordinatesList.isEmpty()) {
             // if no enemy stones have been found return (-1,-1)
             return CoordinatesFactory.createCoordinates(-1, -1);
         }
@@ -120,7 +120,7 @@ public class MyMoveStrategy implements MoveStrategy {
             }
         }
 
-        if (coordinatesList.size() == 0) {
+        if (coordinatesList.isEmpty()) {
             // if no empty place has been found return (-1,-1)
             return CoordinatesFactory.createCoordinates(-1, -1);
         }

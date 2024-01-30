@@ -1,6 +1,5 @@
 package ClientCommands;
 
-import GameObjects.StoneColor;
 import Server.Client;
 
 public class KOCommand implements Command{

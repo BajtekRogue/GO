@@ -29,8 +29,7 @@ public class MessageDecoder {
                 int x = Integer.parseInt(tokens[xIndex]);
                 int y = Integer.parseInt(tokens[yIndex]);
                 return CoordinatesFactory.createCoordinates(x, y);
-            } catch (NumberFormatException ignored) {
-            }
+            } catch (NumberFormatException | ArrayIndexOutOfBoundsException ignored) {}
         }
 
         return CoordinatesFactory.createCoordinates(-1, -1);
@@ -118,9 +117,7 @@ public class MessageDecoder {
         if (parts.length >= 3) {
             try {
                 return Integer.parseInt(parts[2]);
-            } catch (NumberFormatException e) {
-                e.printStackTrace();
-            }
+            } catch (NumberFormatException ignored) {}
         }
 
         return -1;
