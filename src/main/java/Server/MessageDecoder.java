@@ -136,9 +136,7 @@ public class MessageDecoder {
                 System.out.println(parts[parts.length - 1]);
                 return Integer.parseInt(parts[parts.length - 1]);
 
-            } catch (NumberFormatException e) {
-                e.printStackTrace();
-            }
+            } catch (NumberFormatException ignored) {}
         }
 
         return -2;
@@ -149,8 +147,7 @@ public class MessageDecoder {
         if (parts.length == 2) {
             try {
                 return Integer.parseInt(parts[1]);
-            } catch (NumberFormatException ignored) {
-            }
+            } catch (NumberFormatException ignored) {}
         }
         return -1;
     }
@@ -160,9 +157,7 @@ public class MessageDecoder {
 
             try {
                 return Integer.parseInt(parts[parts.length-1]);
-            } catch (NumberFormatException ignored) {
-
-        }
+            } catch (NumberFormatException ignored) {}
         return -1;
     }
 }

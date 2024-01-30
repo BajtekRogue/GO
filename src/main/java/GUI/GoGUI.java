@@ -21,6 +21,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
 
 import java.io.IOException;
 import java.util.List;
@@ -36,7 +37,6 @@ public class GoGUI extends Application {
     private static final double DOT_SIZE = 5;
     private int whitePoints = 0;
     private int blackPoints = 0;
-    private int consecutivePasses = 0;
     private Label turnLabel;
     private Label pointsLabel;
 
@@ -49,7 +49,6 @@ public class GoGUI extends Application {
     private final BooleanProperty activateFFButton = new SimpleBooleanProperty(false);
     private Stage primaryStage;
     private String selectedGame;
-    private boolean spectatorMode;
     private Pane infoPane;
     private Button passButton;
     private Button surrenderButton;
@@ -79,9 +78,9 @@ public class GoGUI extends Application {
         ButtonType humanButton = new ButtonType("Human");
         ButtonType botButton = new ButtonType("Bot");
         ButtonType loadButton = new ButtonType("Load Game");
-        ButtonType cancelButton = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
+
         if(client.isFirstPlayer()) {
-            gameTypeDialog.getButtonTypes().setAll(humanButton, botButton, loadButton, cancelButton);
+            gameTypeDialog.getButtonTypes().setAll(humanButton, botButton, loadButton);
             Optional<ButtonType> result = gameTypeDialog.showAndWait();
 
             if (result.isPresent()) {
@@ -193,7 +192,12 @@ public class GoGUI extends Application {
 
             Scene scene = new Scene(root, (BOARD_SIZE + 1) * TILE_SIZE + 220, BOARD_SIZE * TILE_SIZE);
             primaryStage.setScene(scene);
-
+            primaryStage.setOnCloseRequest((WindowEvent event) -> {
+                try {
+                    client.sendSurrender();
+                } catch (IOException ignored) {}
+                client.disconnect();
+            });
             primaryStage.show();
 
         }
@@ -206,9 +210,8 @@ public class GoGUI extends Application {
         ButtonType size9x9 = new ButtonType("9x9");
         ButtonType size13x13 = new ButtonType("13x13");
         ButtonType size19x19 = new ButtonType("19x19");
-        ButtonType cancelButton = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
 
-        sizeDialog.getButtonTypes().setAll(size9x9, size13x13, size19x19, cancelButton);
+        sizeDialog.getButtonTypes().setAll(size9x9, size13x13, size19x19);
 
         Optional<ButtonType> sizeResult = sizeDialog.showAndWait();
 
@@ -322,7 +325,6 @@ public class GoGUI extends Application {
             updateStones();
             updateInfo();
             if (selectedGame != null) {
-                spectatorMode = true;
                 client.loadMove(selectedGame,1);
                 switchToNavigationMode();
             }
@@ -594,6 +596,7 @@ public class GoGUI extends Application {
     }
 
     private void closeGUI() {
+        client.disconnect();
         Platform.runLater(() -> primaryStage.close());
     }
 
@@ -605,4 +608,5 @@ public class GoGUI extends Application {
     public void setBoardSize(int boardSize) {
         BOARD_SIZE = boardSize;
     }
+
 }

@@ -49,17 +49,7 @@ public class DatabaseManager {
             return null;
         }
     }
-//    public static ResultSet getAllMoves() {
-//        try (Connection connection = DriverManager.getConnection(DB_URL);
-//             Statement statement = connection.createStatement()) {
-//            String tableName = getCurrentTableName();
-//            String selectMovesQuery = "SELECT player_color, move FROM " + tableName + " ORDER BY id";
-//            return statement.executeQuery(selectMovesQuery);
-//        } catch (SQLException e) {
-//            System.out.println("SQL error");
-//            return null;
-//        }
-//    }
+
     public static String getOneMove(String gameName, int moveID) {
         try (Connection connection = DriverManager.getConnection(DB_URL);
              Statement statement = connection.createStatement()) {

@@ -108,7 +108,11 @@ public class Server {
             }
         } catch (IOException | ClassNotFoundException e) {
             System.out.println("Player " + playerId + " disconnected.");
+            broadcastMessageToAll("Player " + playerId + " disconnected.");
             players.remove(player);
+            if(players.isEmpty()){
+                disconnect();
+            }
         }
     }
 
@@ -116,13 +120,11 @@ public class Server {
         if (message.contains("LOAD")) {
             String selectedGame = MessageDecoder.extractSelectedGame(message);
             int moveNumber = MessageDecoder.extractMoveNumber(message);
-//            System.out.println(DatabaseManager.getOneMove(selectedGame,moveNumber));
             sendMessage(player.getOutputStream(), DatabaseManager.getOneMove(selectedGame, moveNumber));
         }
         if (message.contains("DLOAD")) {
             String selectedGame = MessageDecoder.extractSelectedGame(message);
             int moveNumber = MessageDecoder.extractMoveNumber(message);
-//            System.out.println(DatabaseManager.getNegatedOneMove(selectedGame,moveNumber));
             sendMessage(player.getOutputStream(), DatabaseManager.getNegatedOneMove(selectedGame, moveNumber));
         }
     }
@@ -254,5 +256,25 @@ public class Server {
         dbGame = true;
         String allGames = DatabaseManager.getAllGames();
         sendMessage(player.getOutputStream(), "GAMES: " + allGames);
+    }
+
+    public static void disconnect() {
+        try {
+            if (serverSocket != null && !serverSocket.isClosed()) {
+                serverSocket.close();
+            }
+
+            for (Player player : players) {
+                if (player.getSocket() != null && !player.getSocket().isClosed()) {
+                    player.getSocket().close();
+                }
+            }
+
+            System.out.println("Server has been disconnected.");
+            System.exit(0);
+
+        } catch (IOException e) {
+            System.out.println("Error while disconnecting: " + e.getMessage());
+        }
     }
 }

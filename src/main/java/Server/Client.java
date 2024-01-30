@@ -30,6 +30,7 @@ public class Client extends Application {
     private List<String> availableGames;
     private Boolean updatedGames = false;
     private boolean hasBoardSize = false;
+    private Socket socket;
 
     public Client() {
         commandMap.put("GameAccepted", new GameAcceptedCommand());
@@ -65,9 +66,6 @@ public class Client extends Application {
         this.playerColor = playerColor;
     }
 
-    public boolean isPlayerReady() {
-        return isPlayerReady;
-    }
     public boolean isFirstPlayer(){return firstPlayer;}
     public void setPlayerReady() {
         isPlayerReady = true;
@@ -79,7 +77,7 @@ public class Client extends Application {
 
     public void run() {
         try {
-            Socket socket = new Socket("localhost", PORT);
+            socket = new Socket("localhost", PORT);
             outputStream = new ObjectOutputStream(socket.getOutputStream());
             inputStream = new ObjectInputStream(socket.getInputStream());
             String message = receiveMessage();
@@ -158,9 +156,6 @@ public class Client extends Application {
     public void sendGameWithBot(int boardSize) throws IOException {
         sendMessage("Bot " + boardSize);
     }
-//    public void sendLoad() throws IOException {
-//        sendMessage("Load");
-//    }
 
     @Override
     public void start(Stage stage){
@@ -197,6 +192,23 @@ public class Client extends Application {
     }
     public List<String> requestAvailableGames(String games) {
         return MessageDecoder.parseGames(games);
+    }
+
+    public void disconnect() {
+        try {
+            if (inputStream != null) {
+                inputStream.close();
+            }
+            if (outputStream != null) {
+                outputStream.close();
+            }
+            if (socket != null && !socket.isClosed()) {
+                socket.close();
+            }
+
+        } catch (IOException e) {
+            System.out.println("Error while disconnecting: " + e.getMessage());
+        }
     }
 
 }

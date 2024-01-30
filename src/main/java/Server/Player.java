@@ -5,6 +5,7 @@ import GameObjects.StoneColor;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.net.ServerSocket;
 import java.net.Socket;
 
 class Player {
@@ -13,11 +14,13 @@ class Player {
     private final ObjectInputStream inputStream;
     private boolean initialMessagesSent = false;
     private StoneColor stoneColor;
+    private Socket socket;
 
     public Player(int playerID, Socket socket) throws IOException {
         this.playerID = playerID;
         this.outputStream = new ObjectOutputStream(socket.getOutputStream());
         this.inputStream = new ObjectInputStream(socket.getInputStream());
+        this.socket = socket;
     }
 
     public int getPlayerID() {
@@ -31,6 +34,7 @@ class Player {
     public ObjectInputStream getInputStream() {
         return inputStream;
     }
+
     public boolean areInitialMessagesSent() {
         return initialMessagesSent;
     }
@@ -45,5 +49,9 @@ class Player {
 
     public StoneColor getStoneColor() {
         return stoneColor;
+    }
+
+    public Socket getSocket() {
+        return socket;
     }
 }
