@@ -18,7 +18,7 @@ import java.util.concurrent.CountDownLatch;
 
 public class Client extends Application {
 
-    private final static int PORT = 1161;
+    private final static int PORT = 1151;
     private static ObjectOutputStream outputStream;
     private static ObjectInputStream inputStream;
     private boolean isPlayerReady = false;

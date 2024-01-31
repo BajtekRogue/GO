@@ -15,7 +15,7 @@ import java.util.Random;
 
 public class Server {
 
-    private static final int PORT = 1161;
+    private static final int PORT = 1151;
     private static ServerSocket serverSocket;
     private static final List<Player> players = new ArrayList<>();
     private static int nextPlayerId = 1;

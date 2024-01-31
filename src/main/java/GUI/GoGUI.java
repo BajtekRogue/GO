@@ -16,13 +16,17 @@ import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 
+import java.awt.*;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
@@ -67,6 +71,21 @@ public class GoGUI extends Application {
 
         this.primaryStage = primaryStage;
         primaryStage.setTitle("Go Game");
+        //Set icon on the application bar
+        var appIcon = new Image("/images/gogameicon.png");
+        primaryStage.getIcons().add(appIcon);
+
+        //Set icon on the taskbar/dock
+        if (Taskbar.isTaskbarSupported()) {
+            var taskbar = Taskbar.getTaskbar();
+
+            if (taskbar.isSupported(Taskbar.Feature.ICON_IMAGE)) {
+                final Toolkit defaultToolkit = Toolkit.getDefaultToolkit();
+                var dockIcon = defaultToolkit.getImage(getClass().getResource("/images/gogameicon.png"));
+                taskbar.setIconImage(dockIcon);
+            }
+
+        }
         primaryStage.setResizable(false);
         Pane root = new Pane();
         root.setPadding(new Insets(10));
@@ -112,95 +131,96 @@ public class GoGUI extends Application {
             continueInitializingGUI();
         }
 
-        }
-        private void continueInitializingGUI(){
-            // Board
-            canvas = new Canvas((BOARD_SIZE) * TILE_SIZE, (BOARD_SIZE + 1) * TILE_SIZE);
-            root.getChildren().add(canvas);
+    }
+    private void continueInitializingGUI(){
+        // Board
+        canvas = new Canvas((BOARD_SIZE) * TILE_SIZE, (BOARD_SIZE + 1) * TILE_SIZE);
+        root.getChildren().add(canvas);
 
-            // Separator Line
-            Pane separatorLine = new Pane();
-            separatorLine.setLayoutX((BOARD_SIZE) * TILE_SIZE-3);
-            separatorLine.setMinWidth(3);
-            separatorLine.setMinHeight(1000);
-            separatorLine.setStyle("-fx-background-color: BLACK;");
+        // Separator Line
+        Pane separatorLine = new Pane();
+        separatorLine.setLayoutX((BOARD_SIZE) * TILE_SIZE-3);
+        separatorLine.setMinWidth(3);
+        separatorLine.setMinHeight(1000);
+        separatorLine.setStyle("-fx-background-color: BLACK;");
 
-            // Right side information
-            infoPane = new Pane();
-            infoPane.setLayoutX((BOARD_SIZE) * TILE_SIZE);
-            infoPane.setMinWidth(300);
-            infoPane.setMinHeight(1000);
-            infoPane.setStyle("-fx-background-color: rgb(196,161,118);");
+        // Right side information
+        infoPane = new Pane();
+        infoPane.setLayoutX((BOARD_SIZE) * TILE_SIZE);
+        infoPane.setMinWidth(300);
+        infoPane.setMinHeight(1000);
+        infoPane.setStyle("-fx-background-color: rgb(196,161,118);");
 
-            // Player Turn Label
-            turnLabel = new Label("Player Turn: BLACK");
-            turnLabel.setLayoutY(200);
-            turnLabel.setLayoutX(75);
-            turnLabel.setStyle("-fx-font-size: 50;");
-            turnLabel.setStyle("-fx-font-weight: bold;");
-            turnLabel.setTextFill(Color.BLACK);
+        // Player Turn Label
+        turnLabel = new Label("Player Turn: BLACK");
+        turnLabel.setLayoutY((((((double) BOARD_SIZE /2) - 1) * TILE_SIZE)));
+        turnLabel.setLayoutX(80);
+        turnLabel.setStyle("-fx-font-size: 100;");
+        turnLabel.setStyle("-fx-font-weight: bold;");
+        turnLabel.setTextFill(Color.BLACK);
 
-            pointsLabel = new Label("Black Points: 0   White Points: 0");
-            pointsLabel.setLayoutY(230);
-            pointsLabel.setLayoutX(75);
-            pointsLabel.setStyle("-fx-font-size: 40;");
-            pointsLabel.setStyle("-fx-font-weight: bold;");
-            pointsLabel.setTextFill(Color.BLACK);
+        pointsLabel = new Label("Black Points: 0\nWhite Points: 0");
+        pointsLabel.setLayoutY((((double) (BOARD_SIZE /2)* TILE_SIZE)));
+        pointsLabel.setLayoutX(90);
+        pointsLabel.setStyle("-fx-font-size: 80;");
+        pointsLabel.setStyle("-fx-font-weight: bold;");
+        pointsLabel.setStyle("-fx-text-fill: rgb(63,93,49);");
 
 
-            // Pass Button
-            passButton = new Button("Pass Turn");
-            passButton.setLayoutY(260);
-            passButton.setLayoutX(75);
-            passButton.setOnAction(e -> {
-                try {
-                    handlePassButtonClick();
-                } catch (IOException ex) {
-                    throw new RuntimeException(ex);
-                }
-            });
-            passButton.disableProperty().bind(Bindings.not(activatePassButton));
 
-            // FF Button
-            surrenderButton = new Button("Forfeit");
-            surrenderButton.setLayoutY(290);
-            surrenderButton.setLayoutX(75);
-            surrenderButton.setOnAction(e -> {
-                try {
-                    handleSurrenderButtonClick();
-                } catch (IOException ex) {
-                    throw new RuntimeException(ex);
-                }
-            });
-            surrenderButton.disableProperty().bind(Bindings.not(activateFFButton));
-
-            infoPane.getChildren().addAll(turnLabel, pointsLabel, passButton, surrenderButton);
-            root.getChildren().addAll(separatorLine, infoPane);
-
-            // Buttons
-            buttons = new Button[BOARD_SIZE][BOARD_SIZE];
-            for (int y = BOARD_SIZE - 1; y >= 0; y--) {
-                for (int x = 0; x < BOARD_SIZE; x++) {
-                    Button button = createButton(x, y);
-                    buttons[x][y] = button;
-                    root.getChildren().add(button);
-                }
+        // Pass Button
+        passButton = new Button("Pass Turn");
+        passButton.setLayoutY((((double) (BOARD_SIZE /2 + 1)* TILE_SIZE)));
+        passButton.setLayoutX(90);
+        passButton.setOnAction(e -> {
+            try {
+                handlePassButtonClick();
+            } catch (IOException ex) {
+                throw new RuntimeException(ex);
             }
+        });
+        passButton.disableProperty().bind(Bindings.not(activatePassButton));
 
+        // FF Button
+        surrenderButton = new Button("Forfeit");
+        surrenderButton.setLayoutY(((((double) BOARD_SIZE /2 + 1.25) * TILE_SIZE)));
+        surrenderButton.setLayoutX(100);
+        surrenderButton.setOnAction(e -> {
+            try {
+                handleSurrenderButtonClick();
+            } catch (IOException ex) {
+                throw new RuntimeException(ex);
+            }
+        });
+        surrenderButton.disableProperty().bind(Bindings.not(activateFFButton));
 
-            drawGoBoard();
+        infoPane.getChildren().addAll(turnLabel, pointsLabel, passButton, surrenderButton);
+        root.getChildren().addAll(separatorLine, infoPane);
 
-            Scene scene = new Scene(root, (BOARD_SIZE + 1) * TILE_SIZE + 220, BOARD_SIZE * TILE_SIZE);
-            primaryStage.setScene(scene);
-            primaryStage.setOnCloseRequest((WindowEvent event) -> {
-                try {
-                    client.sendSurrender();
-                } catch (IOException ignored) {}
-                client.disconnect();
-            });
-            primaryStage.show();
-
+        // Buttons
+        buttons = new Button[BOARD_SIZE][BOARD_SIZE];
+        for (int y = BOARD_SIZE - 1; y >= 0; y--) {
+            for (int x = 0; x < BOARD_SIZE; x++) {
+                Button button = createButton(x, y);
+                buttons[x][y] = button;
+                root.getChildren().add(button);
+            }
         }
+
+
+        drawGoBoard();
+
+        Scene scene = new Scene(root, (BOARD_SIZE + 1) * TILE_SIZE + 220, BOARD_SIZE * TILE_SIZE);
+        primaryStage.setScene(scene);
+        primaryStage.setOnCloseRequest((WindowEvent event) -> {
+            try {
+                client.sendSurrender();
+            } catch (IOException ignored) {}
+            client.disconnect();
+        });
+        primaryStage.show();
+
+    }
     private int showSizeSelectionDialog() {
         Alert sizeDialog = new Alert(Alert.AlertType.CONFIRMATION);
         sizeDialog.setTitle("Choose Board Size");
@@ -242,7 +262,7 @@ public class GoGUI extends Application {
     private void updateInfo() {
         turnLabel.setText("Player Turn: " + currentPlayer.toString());
         turnLabel.setTextFill((currentPlayer == StoneColor.BLACK) ? Color.BLACK : Color.WHITE);
-        pointsLabel.setText("Black Points: " + blackPoints + "   White Points: " + whitePoints);
+        pointsLabel.setText("Black Points: " + blackPoints + "\nWhite Points: " + whitePoints);
     }
 
     private Button createButton(int x, int y) {
@@ -264,7 +284,7 @@ public class GoGUI extends Application {
         });
         // Add highlighting effect on mouse enter for empty buttons
         button.setOnMouseEntered(event -> {
-            if (board.getTile(x, y) == null && client.isMyTurn()) {
+            if (board.getTile(x, y) == null && client.isMyTurn() && !loadGame) {
                 StoneColor stoneColor = client.getPlayerColor();
                 Color highlightColor = (stoneColor == StoneColor.WHITE) ? Color.WHITE : Color.BLACK;
                 highlightColor = highlightColor.deriveColor(0, 1, 1, 0.5);
@@ -338,11 +358,10 @@ public class GoGUI extends Application {
         activateFFButton.set(false);
         Button prevButton = new Button("←");
         Button nextButton = new Button("→");
-
         HBox navigationBox = new HBox(10, prevButton, nextButton);
         navigationBox.setAlignment(Pos.CENTER);
-        navigationBox.setLayoutY(270);
-        navigationBox.setLayoutX(80);
+        navigationBox.setLayoutY((((double) (BOARD_SIZE /2 + 1)* TILE_SIZE)));
+        navigationBox.setLayoutX(95);
         infoPane.getChildren().removeAll(surrenderButton, passButton);
         infoPane.getChildren().add(navigationBox);
 
@@ -549,7 +568,7 @@ public class GoGUI extends Application {
     public void removeStonesFromBoard(List<Coordinates> listOfStones){
         int points = listOfStones.size();
         for(Coordinates coordinates: listOfStones)
-                board.setTile(coordinates.getX(), coordinates.getY(), null);
+            board.setTile(coordinates.getX(), coordinates.getY(), null);
 
         if(currentPlayer == StoneColor.WHITE)
             whitePoints += points;
