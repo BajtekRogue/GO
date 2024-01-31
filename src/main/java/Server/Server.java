@@ -39,12 +39,12 @@ public class Server {
                 handleClient();
             }
 
-        } catch (IOException e) {
+        } catch (IOException | InterruptedException e) {
             System.out.println("Error in the server: " + e.getMessage());
         }
     }
 
-    private static void handleClient() throws IOException {
+    private static void handleClient() throws IOException, InterruptedException {
         Socket clientSocket = serverSocket.accept();
         System.out.println("New player connected!");
 
@@ -56,7 +56,16 @@ public class Server {
 
         if (!newPlayer.areInitialMessagesSent()) {
             sendMessage(newPlayer.getOutputStream(), "You have successfully connected to the server as player" + playerId);
-            sendMessage(newPlayer.getOutputStream(), "PlayerID: " + playerId + " " + boardSize);
+            if(playerId == 1){
+                sendMessage(newPlayer.getOutputStream(), "PlayerID: " + playerId + " " + boardSize);
+            }
+            else{
+                while( boardSize == 0){
+                    Thread.sleep(1);
+                }
+                sendMessage(newPlayer.getOutputStream(), "PlayerID: " + playerId + " " + boardSize);
+            }
+
             newPlayer.setInitialMessagesSent();
         }
         // Start a new thread to handle messages from the current player
@@ -111,7 +120,7 @@ public class Server {
             broadcastMessageToAll("Player " + playerId + " disconnected.");
             players.remove(player);
             if(players.isEmpty()){
-                disconnect();
+                closeServer();
             }
         }
     }
@@ -140,7 +149,7 @@ public class Server {
         }
         // Close the server when the game finishes
         if (output.contains("ENDGAME") || output.contains("SURRENDER")) {
-            System.exit(0);
+            closeServer();
         }
     }
 
@@ -181,7 +190,7 @@ public class Server {
 
         // Close the server when the game finishes
         if (output.contains("ENDGAME") || output.contains("SURRENDER")) {
-            System.exit(0);
+            closeServer();
         }
     }
 
@@ -258,7 +267,7 @@ public class Server {
         sendMessage(player.getOutputStream(), "GAMES: " + allGames);
     }
 
-    public static void disconnect() {
+    public static void closeServer() {
         try {
             if (serverSocket != null && !serverSocket.isClosed()) {
                 serverSocket.close();
@@ -269,9 +278,7 @@ public class Server {
                     player.getSocket().close();
                 }
             }
-
-            System.out.println("Server has been disconnected.");
-            System.exit(0);
+            System.out.println("Server has been closed");
 
         } catch (IOException e) {
             System.out.println("Error while disconnecting: " + e.getMessage());
