@@ -8,10 +8,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Random;
+import java.util.*;
 
 public class Server {
 
@@ -280,8 +277,8 @@ public class Server {
             }
             System.out.println("Server has been closed");
 
-        } catch (IOException e) {
-            System.out.println("Error while disconnecting: " + e.getMessage());
+        } catch (IOException | ConcurrentModificationException e) {
+            System.out.println("Error while disconnecting: ");
         }
     }
 }

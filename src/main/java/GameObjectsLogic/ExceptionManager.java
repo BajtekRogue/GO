@@ -7,7 +7,7 @@ import java.util.List;
 
 public class ExceptionManager {
 
-    private static Coordinates KO_coordinates = CoordinatesFactory.createCoordinates(-1, -1);
+    private static Coordinates KO_coordinates = CoordinatesFactory.createCoordinates(-2, -2);
 
     public static void setKO_coordinates(Coordinates KO_position) {
         KO_coordinates = KO_position;
@@ -17,8 +17,8 @@ public class ExceptionManager {
         return KO_coordinates;
     }
 
-    public static void restKO_coordinates(){
-        KO_coordinates = CoordinatesFactory.createCoordinates(-1, -1);
+    public static void restKO_coordinates() {
+        KO_coordinates = CoordinatesFactory.createCoordinates(-2, -2);
     }
 
     public static boolean checkForSuicide(int x, int y) {
@@ -35,8 +35,8 @@ public class ExceptionManager {
 
     }
 
-    public static boolean checkForKO(int x, int y){
-        if(x == KO_coordinates.getX() && y == KO_coordinates.getY()){
+    public static boolean checkForKO(int x, int y) {
+        if (x == KO_coordinates.getX() && y == KO_coordinates.getY()) {
             BoardManager.removeStone(x, y);
             NeighbourManager.updateNeighbours(x, y);
             return true;

@@ -28,6 +28,8 @@ public class Bot {
     public String adjustMoveMessageFormat(Coordinates coordinates) {
         int x = coordinates.getX();
         int y = coordinates.getY();
+        if (x == -1 && y == -1)
+            return "Pass";
         return "Move " + x + " " + y;
     }
 
